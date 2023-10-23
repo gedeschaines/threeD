@@ -49,8 +49,8 @@ Latest development effort for the **threeD** program has been on a bootable Ubun
 + libxpm-dev for X11 pixmap libXpm and include headers
 + libmotif-dev for Motif libXm and include headers
 + ImageMagick for convert app to convert XPM to GIF/JPEG formats and create animated GIF
-* ffmpeg to create MP4 video file from JPEG image sequence
-* ffplay or other video player such as MS Windows Media Player or VLC media player.
++ ffmpeg to create MP4 video file from JPEG image sequence
++ ffplay or other video player such as MS Windows Media Player or VLC media player.
 
 The **threeD** program is an X11 application that opens a desktop window in which animated 3D rendering is displayed. On Linux and Windows systems, a running X server is required. Most Linux distributions provide and start X server prior to displaying the desktop graphical interface. On Windows a third party X server application, such as VcXsrv, must be installed and activated before **threeD** can run. The following web articles provide information to get VcXsrv installed and working with a Windows 10 WSL2 Linux distribution.
 
