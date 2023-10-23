@@ -48,7 +48,7 @@ Latest development effort for the **threeD** program has been on a bootable Ubun
 + libxt-dev for X11 toolkit intrinsics libXt and include headers
 + libxpm-dev for X11 pixmap libXpm and include headers
 + libmotif-dev for Motif libXm and include headers
-+ ImageMagick for convert program to convert XPM to GIF and JPEG formats and create animated GIF
++ ImageMagick for convert program to convert XPM to GIF/JPEG formats and create animated GIF
 * ffmpeg to create MP4 video file from JPEG image sequence
 * ffplay or other video player such as MS Windows Media Player or VLC media player.
 
