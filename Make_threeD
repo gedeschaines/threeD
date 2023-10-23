@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#FILE:  Make_threeD
+#DATE:  23 FEB 2004
+#AUTH:  G. E. Deschaines
+#DESC:  Shell script to build threeD by invoking make with the 
+#       appropriate platform specific Makefile.
+
+SYSNAM=`uname -s`
+
+# Create ./bin subdirectory is not present.
+if [ ! -d ./bin ]
+then
+  mkdir ./bin
+fi
+
+# Invoke make with system appropriate Makefile 
+if [ ${SYSNAM} == "Linux" ]
+then
+   make -C ./src -f ../Makefile_Linux threeD
+   exit
+fi
+if [ ${SYSNAM%%_*} == "CYGWIN" ]
+then
+   make -C ./src -f ../Makefile_Cygwin threeD
+   exit
+fi

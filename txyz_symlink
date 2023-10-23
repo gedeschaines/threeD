@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#FILE:  txyz_symlink
+#DATE:  23 OCT 2023
+#AUTH:  G. E. Deschaines
+#DESC:  Create symbolic link to specified trajectory output file.
+
+function remove_symlink
+{
+  if [ -h TXYZ.OUT ]
+  then
+    rm -f ./TXYZ.OUT
+  fi
+}
+
+# Check command line parameters
+if [ $# -lt 1 ] || [ $1 -lt 0 ] || [ $1 -gt  9999 ]
+then
+  echo "usage:  Make_symlink ####"
+  echo "where:  #### is a TXYZ.OUT file run number of the form"
+  echo "        0000 to 9999 inclusive."
+  exit -1
+fi
+
+run=$1
+# Check if trajectory output file exists.
+file="TXYZ.OUT.${run}"
+if [ ! -e ./txyz/$file ]
+then
+  echo "error:  file ${file} does not exist."
+  exit -2
+fi
+
+# Remove previous symbolic link TXYZ.OUT (if it exists) and
+# create symbolic link to specified trajectory output file
+# as TXYZ.OUT, which threeD loads.
+remove_symlink
+ln -s ./txyz/${file} ./TXYZ.OUT

@@ -1,0 +1,23 @@
+# FILE:  Makefile_Cygwin
+# DATE:  23 FEB 2004
+# AUTH:  G. E. Deschaines
+# DESC:  Makefile for threeD builds on a Cygwin platform.
+
+CC=/usr/bin/gcc
+CFLGS=-O2 -Wall -Wl,--enable-auto-import
+CDEFS=-DDBG_LVL=0
+XINCS=-I/usr/include
+XLIBS=-L/usr/lib -lXm -lXpm -lXt -lX11 -lSm -lICE
+SRC_LIST="threeD.c draw3D.c pquelib.c cliblib.c"
+
+# TARGET RULES
+
+threeD:
+	$(CC) $(CFLGS) $(CDEFS) -o ../bin/threeD.exe threeD.c $(XINCS) -lm $(XLIBS)
+
+clean:
+	rm -f ../bin/threeD.exe
+
+# DEPENDENCIES
+
+threeD.exe: $(SRC_LIST)

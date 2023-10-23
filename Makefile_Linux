@@ -1,0 +1,28 @@
+# FILE:  Makefile_Linux
+# DATE:  23 FEB 2004
+# AUTH:  G. E. Deschaines
+# DESC:  Makefile for threeD builds on a Linux platform.
+# PKGS:  Required X11 and Motif library packages
+#   1) libX11-dev for X11 client-side library libX11 and include headers
+#   2) libxt-dev for X11 toolkit intrinsics libXt and include headers
+#   3) libxpm-dev for X11 pixmap libXpm and include headers
+#   4) libmotif-dev for Motif libXm and include headers
+
+CC=/usr/bin/gcc
+CFLGS=-O2 -Wall
+CDEFS=-DLINUX -DDBG_LVL=0
+XINCS=-I/usr/include
+XLIBS=-L/usr/lib/x86_64-linux-gnu -lXm -lXpm -lXt -lX11
+SRC_LIST="threeD.c draw3D.c pquelib.c cliblib.c"
+
+# TARGET RULES
+
+threeD:
+	$(CC) $(CFLGS) $(CDEFS) -o ../bin/threeD.exe threeD.c $(XINCS) -lm $(XLIBS)
+
+clean:
+	rm -f ../bin/threeD.exe
+
+# DEPENDENCIES
+
+threeD.exe: $(SRC_LIST)

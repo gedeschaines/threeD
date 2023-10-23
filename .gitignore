@@ -1,0 +1,7 @@
+bin/
+Ximg/
+TXYZ.OUT
+.code-workspace
+*.o
+*.exe
+*\~

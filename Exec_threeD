@@ -1,0 +1,59 @@
+#!/bin/bash
+
+#FILE:  Exec_threeD
+#DATE:  23 FEB 2004
+#AUTH:  G. E. Deschaines
+#DESC:  Execute threeD.exe with specified trajectory output file.
+
+function remove_symlink
+{
+  if [ -h TXYZ.OUT ]
+  then
+    rm -f ./TXYZ.OUT
+  fi
+}
+
+# Check command line parameters
+if [ $# -lt 1 ] || [ $1 -lt 0 ] || [ $1 -gt  9999 ]
+then
+  echo "usage:  Exec_threeD ####"
+  echo "where:  #### is a TXYZ.OUT file run number of the form"
+  echo "        0000 to 9999 inclusive."
+  exit -1
+fi
+run=$1
+
+# Check if threeD executable file exists.
+if [ ! -e ./bin/threeD.exe ]
+then
+  echo "error:  threeD.exe does not exist, but can be created"
+  echo "        by running the Make_threeD shell script."
+  exit -1
+fi
+
+# Check if trajectory output file exists.
+file="TXYZ.OUT.${run}"
+if [ ! -e ./txyz/$file ]
+then
+  echo "error:  file ${file} does not exist."
+  exit -2
+fi
+
+# Create ./Ximg subdirectory is not present.
+if [ ! -d ./Ximg ]
+then
+  mkdir ./Ximg
+fi
+
+# Remove previous symbolic link TXYZ.OUT (if it exists) and
+# create symbolic link to specified trajectory output file
+# as TXYZ.OUT, which threeD loads.
+remove_symlink
+ln -s ./txyz/${file} ./TXYZ.OUT
+   
+# Initiate execution of threeD.
+./bin/threeD.exe
+
+# Remove symbolic link TXYZ.OUT.
+remove_symlink
+exit 0

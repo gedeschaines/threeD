@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#FILE:  xpm2mp4
+#DATE:  20 OCT 2023
+#AUTH:  G. E. Deschaines
+#DESC:  Converts a sequence of XPM files to JPEG files and merges
+#       the JPEG files into a MP4 video file.
+
+#NOTE:  Requires ffmpeg and the ImageMagick convert program.
+
+# Get list of XPM files.
+
+XPM_LIST=(`ls *.xpm`)
+if [ "${#XPM_LIST[*]}" == "0" ]
+then
+  echo "error:  No XPM files in present working directory."
+  exit -1
+fi
+
+# Convert each XMP file into a JPEG file.
+
+JPG_LIST=""
+for FILE in ${XPM_LIST[@]}
+do
+  NAME=${FILE%.xpm}
+  echo "converting:  $FILE"
+  convert $FILE $NAME.jpg
+  JPG_LIST="$JPG_LIST $NAME.jpg"
+done
+
+# Merge all JPEG files into MP4 video file.
+
+img_FPS=`grep "img_FPS" ../src/threeD.c | awk '{ print $5 }'`
+FPS=${img_FPS%;}
+
+if [ -e  /usr/bin/ffmpeg ]
+then
+  echo "Creating MP4 video:  img_anim.mp4 @ 25 fps"
+  /usr/bin/ffmpeg -loglevel error -f image2 -framerate ${FPS} -i ./img_%04d.jpg -r 25 -vcodec libx264 -b:v 8000k -crf 18 -pix_fmt yuv420p ./img_anim.mp4
+fi
+
+exit 0
