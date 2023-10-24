@@ -97,7 +97,7 @@ typedef struct
 /* FOV INFORMATION */
 
    Extended  fova =  90.0;  /* Field-of-View whole angle (deg)     */
-   Extended  fovs = 640.0;  /* Field-of-View display size (pixels) */
+   Extended  fovs = 600.0;  /* Field-of-View display size (pixels) */
    Extended  ratio;
    Extended  fovcx;
    Extended  fovcy;
@@ -688,20 +688,36 @@ void DrawPoly3D( Integer iPol, Display *display, Pixmap drawable )
    }
 }
 
-void LoadPoly ( FILE *lfni )
+void LoadPoly ( FILE *lfni, const char* polyfile)
 {
    Integer   i,k;
    Integer   polpnt, polpri, polcol, poltyp; 
    Extended  polsfc;
    Extended  x, y, z;
+   Extended  mdloffx, mdloffy, mdloffz, mdlsfc;
+   char*     sptr;
+   char      mdlnam[60];
    char      polnam[60];
 
+   static char fmt0[]="%lf %lf %lf %lf %s\n";
    static char fmt1[]="%hd %hd %hd %hd %lf %s\n";
    static char fmt2[]="%lf %lf %lf\n";
 
+/* Read shape model offsets, scaling factor and name record. */
+   sptr = fgets(sbuff,132,lfni);
+   if ( sptr == NULL ) {
+      printf("LoadPoly:  fgets error for 1st record in polyfile %s.\n",polyfile);
+      return;
+   }
+   k = sscanf(sbuff,fmt0,&mdloffx,&mdloffy,&mdloffz,&mdlsfc,mdlnam);
+   if ( k != 5 ) {
+      printf("LoadPoly:  sscanf error for 1st record in polyfile %s.\n",polyfile);
+      return;
+   }
+
    do {
 /*+++ Load polygon specification record. */
-      fgets(sbuff,132,lfni);
+      sptr = fgets(sbuff,132,lfni);
       k = sscanf(sbuff,fmt1,&polpnt,&polpri,&polcol,&poltyp,&polsfc,polnam);
       if ( k == 6 )
       {
@@ -717,9 +733,9 @@ void LoadPoly ( FILE *lfni )
 #if DBG_LVL > 1
             printf("LoadPoly:  Loaded vertex -  %f  %f  %f\n",x,y,z);
 #endif
-            pntlist[i].X = x*polsfc;
-            pntlist[i].Y = y*polsfc;
-            pntlist[i].Z = z*polsfc;
+            pntlist[i].X = x*polsfc*mdlsfc;
+            pntlist[i].Y = y*polsfc*mdlsfc;
+            pntlist[i].Z = z*polsfc*mdlsfc;
 #if DBG_LVL > 1
             printf("LoadPoly:  Scaled vertex -  %f  %f  %f\n",pntlist[i].X,
                                                               pntlist[i].Y,
@@ -732,9 +748,9 @@ void LoadPoly ( FILE *lfni )
 #if DBG_LVL > 1
          printf("LoadPoly:  Loaded offset -  %f  %f  %f\n",x,y,z);
 #endif
-         offset.X = x*polsfc;
-         offset.Y = y*polsfc;
-         offset.Z = z*polsfc;
+         offset.X = x*polsfc*mdlsfc + mdloffx;
+         offset.Y = y*polsfc*mdlsfc + mdloffy;
+         offset.Z = z*polsfc*mdlsfc + mdloffz;
 #if DBG_LVL > 1
          printf("LoadPoly:  Scaled offset -  %f  %f  %f\n",offset.X,
                                                            offset.Y,
@@ -886,7 +902,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #if DBG_LVL > 0 
       printf("draw3D:  Loading polygons from file %s\n","grndpoly.dat");
 #endif
-      LoadPoly(lfni);
+      LoadPoly(lfni,"./dat/grndpoly.dat");
       fclose(lfni);
    }
 /*
@@ -896,7 +912,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #if DBG_LVL > 0 
       printf("draw3D:  Loading polygons from file %s\n","grndgrid.dat");
 #endif
-      LoadPoly(lfni);
+      LoadPoly(lfni,"./dat/grndpgrid.dat");
       fclose(lfni);
    }
 */
@@ -906,7 +922,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #if DBG_LVL > 0 
       printf("draw3D:  Loading polygons from file %s\n","fwngpoly.dat");
 #endif
-      LoadPoly(lfni);
+      LoadPoly(lfni,"./dat/fwngpoly.dat");
       fclose(lfni);
    }
    lfni = fopen("./dat/mislpoly.dat","r");
@@ -915,7 +931,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #if DBG_LVL > 0 
       printf("draw3D:  Loading polygons from file %s\n","mislpoly.dat");
 #endif
-      LoadPoly(lfni);
+      LoadPoly(lfni,"./dat/mislpoly.dat");
       fclose(lfni);
    }
 /*
@@ -925,7 +941,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #if DBG_LVL > 0 
      printf("draw3D:  Loading polygons from file %s\n","mazepoly.dat");
 #endif
-     LoadPoly(lfni);
+     LoadPoly(lfni,"./dat/mazepoly.dat");
      fclose(lfni);
    }
 */

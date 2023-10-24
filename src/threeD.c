@@ -115,7 +115,7 @@ int main(argc, argv)
 /* Create a widget.
 */
    XtSetArg(wargs[n], XtNwidth,  800); n++;  // NOTE: Value for fovs in draw3D.c should match
-   XtSetArg(wargs[n], XtNheight, 640); n++;  //       the value of height here.
+   XtSetArg(wargs[n], XtNheight, 600); n++;  //       the value of height here.
 
    a_widget = XtCreateManagedWidget("a_widget",
                                      xmDrawingAreaWidgetClass,
