@@ -4,7 +4,7 @@ ____________
 
  <p align="center">
   <a href="https://youtu.be/xg66Pwu2sh0" target="_blank">
-   <img src="./doc/image/img_0241.jpg" width="800" height="600" alt="Rendered image 241 of faceted model animation for TXYZ.OUT.0000"/></a>
+   <img src="./doc/image/img_0241.jpg" width="800" height="600" alt="Rendered image 241 of faceted model animation for TXYZ.OUT.0000"/></a><br>
   Rendered image 241 merged into img_anim_0000.mp4 (click image for YouTube video)
  </p>
 
@@ -68,7 +68,7 @@ command="service dbus start; service ssh start; service xrdp start"
 
 ## Execution Overview ##
 
-The following steps delineate typical **threeD** utilization from within a bash shell terminal.
+The following steps delineate typical **threeD** utilization from a bash shell terminal.
 
 ### 1. Build threeD executable ###
 From within the ./threeD directory, invoke **./Make_threeD** to build "./bin/threeD.exe".
@@ -89,7 +89,7 @@ Note, to prevent captured and converted images from a previous **threeD** execut
 
 All input facet model shape polygon data file paths are hard coded in the draw3D.c file. This was done to shift the task of assigning file paths to OS shell scripts external to **threeD** for batch processing management. Although the program is now interactive, batch processing use cases were not human-in-the-loop.
 
-Quadrilateral polygons are used for shape facets, instead of triangles as in modern surface mesh models, since it was easier and faster to decompose missile and target shapes into quad patches. Also, there was no requirement to calculate accurate surface normals to model realistic lighting effects. Each facet is assigned a constant fill color.
+Quadrilateral polygons are used for shape facets, instead of triangles as in modern surface mesh models, since it was easier and faster to decompose missile and target shapes, and ground plane grids into quad patches. Also, there was no requirement to calculate accurate surface normals to model realistic lighting effects or perform face culling. Each facet is assigned a constant fill color, and considered visible on both surfaces. Consistancy in direction around the perimeter of a shape model facet's polygon vertice are specified should be maintained to facilite possibilty of face culling being introduced in future enhancements. Currently, the order adheres to right-hand-rule such that the positive normal is in a facet's +Z direction.
 
 There is no attempt to resolve problems rendering intersecting polygons. Other than time of intercept, as missile impacts target, adjoined polygons do not intersect others.
 
