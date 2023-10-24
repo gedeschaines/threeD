@@ -12,11 +12,11 @@ An antiquated X11 C program which displays animated 3D faceted solid shape rende
 
 ## Background ##
 
-The genesis of **threeD** began around 1986 as a Pascal program to perform 3D rendering of solid shapes on an Apple Mac, which only had 2D, 1-bit graphics capability. The progam was developed solely to learn and apply hidden surface removal algorithms before the advent of readily available 3D graphics libraries such as IRIS GL, Direct3D and OpenGL. At that time, most raster graphics hardware could perform 2D polygon drawing and filling, but multi-buffer (vertex, depth, frame, etc.) rendering pipelines were only available on expensive systems with proprietary graphics hardware, drivers and libraries, such as those developed by SGI and Tektronix. Most 3D rendering was performed in software, thus extremely CPU and memory intensive, and very slow; not at all conducive for realtime 3D rendering and animation.
+The genesis of **threeD** began around 1986 as a Pascal program to perform 3D rendering of solid shapes on an Apple Mac, which only had 2D, 1-bit graphics capability. The progam was developed solely to learn and apply hidden surface removal algorithms before the advent of readily available 3D graphics libraries such as IRIS GL, Direct3D and OpenGL. At that time, most raster graphics hardware could perform 2D polygon drawing and filling, but multi-buffer (vertex, depth, frame, etc.) rendering pipelines were only available on expensive systems with proprietary graphics hardware, drivers and libraries, such as those developed by Intergraph, SGI and Tektronix. Most 3D rendering was performed in software, thus extremely CPU and memory intensive, and very slow; not at all conducive for realtime 3D rendering and animation.
 
 Around the early 1990's, being employed at a weapon systems analysis firm involved in engineering analyses and simulation for SAM early warning and countermeasures projects provided an incentive to convert the Pascal program to FORTRAN and tailor it to process flight path and trajectory output files from several air combat and 3-DOF/6-DOF missile flyout simulations. It was primarily used as a post-processimg visualization tool to assist in simulation enhancement and V&V activities, and to generate presentation material illustrating areas of interest and concern. During this period the program evolved into several variants for different computing systems and graphics libraries.
 
-By late 1990's and early 2000's, having resigned from the weapon systems analysis firm, continued work with the program languished and it became a novelty item to install on various personal Linux and Windows/Cygwin systems to evaluate X11 features, capabilites and resolve compatiblity issues. Recently it's been installed and executed on a WSL2 Ubuntu 20.04 distribution for MS Windows 10 Pro version 22H2 (OS Build 19045.3570) running VcXsrv X Server version 1.20.9.0 (3 Jan 2021). Documented herein are the results of this effort.
+By late 1990's and early 2000's, having resigned from the weapon systems analysis firm, continued work with the program languished. It became a novelty item to install on various personal Linux and Windows/Cygwin systems to evaluate X11 features amd capabilites, and resolve compatiblity issues. Recently it's been installed and executed on WSL2 Ubuntu 20.04 distribution for MS Windows 10 Pro version 22H2 (OS Build 19045.3570) running VcXsrv X Server version 1.20.9.0 (3 Jan 2021). Documented herein are the results of this effort.
 
 ## Repository Structure ##
 
@@ -43,7 +43,7 @@ The provided shell scripts enable a user to build and execute **threeD** entirel
 
 ## Execution Prerequisites ##
 
-Latest development effort for the **threeD** program has been on a bootable Ubuntu 18.04 Linux system and on a Windows 10 Pro system with WSL2 running an Ubuntu 20.04 Linux distribution. Although **threeD** had been successfully built and executed with Cygwin on Windows 2000, XP and 7 systems, no work has been done recently to ensure the provided Makefile_Cygwin file will create a **threeD** executable. In addition to GNU make and gcc toolchains, the following libraries and applications are required to build and execute **threeD**, and work with captured pixel image files.
+Latest development efforts for the **threeD** program have been on bootable Ubuntu 14.04, 16.04 and 18.04 Linux systems, and on a Windows 10 Pro system with WSL2 running an Ubuntu 20.04 Linux distribution. Although **threeD** had been successfully built and executed with Cygwin on Windows 2000, XP and 7 systems, no work has been done recently to ensure the provided Makefile_Cygwin file will create a **threeD** executable. In addition to GNU make and gcc toolchains, the following libraries and applications are required to build and execute **threeD**, and work with captured pixel image files.
 
 + libX11-dev for X11 client-side library libX11 and include headers
 + libxt-dev for X11 toolkit intrinsics libXt and include headers
@@ -89,7 +89,7 @@ Note, to prevent captured and converted images from a previous **threeD** execut
 
 All input facet model shape polygon data file paths are hard coded in the draw3D.c file. This was done to shift the task of assigning file paths to OS shell scripts external to **threeD** for batch processing management. Although the program is now interactive, batch processing use cases were not human-in-the-loop.
 
-Quadrilateral polygons are used as shape facets, instead of triangles in modern surface mesh models, since it was easier and faster to decompose missile and target shapes into quad patches. Also, there was no requirement to calculate accurate surface normals to model realistic lighting effects. Each facet is assigned a constant fill color.
+Quadrilateral polygons are used for shape facets, instead of triangles as in modern surface mesh models, since it was easier and faster to decompose missile and target shapes into quad patches. Also, there was no requirement to calculate accurate surface normals to model realistic lighting effects. Each facet is assigned a constant fill color.
 
 There is no attempt to resolve problems rendering intersecting polygons. Other than time of intercept, as missile impacts target, adjoined polygons do not intersect others.
 
@@ -98,7 +98,7 @@ The provided TXYZ.OUT.#### trajectory files generated by a MathCad 3-DOF model o
 + 0000 - Fixed-wing target at constant speed, altitude and heading; SAM launched with 12 degree elevation and 10 degree lead azimuth.
 + 0001 - Fixed-wing target performing a constant 1g banking level turn toward its left; SAM launched with 12 degree elevation and 10 degree lead azimuth.
 + 0002 - Fixed-wing target performing a constant 1g banking descending turn toward its left; SAM launched with 12.6 degree elevation and 27 degree lead azimuth.
-+ 0003 - Fixed-wing target performing a constant 3g banking descending turn toward its left; SAM launched with 14 degree elevation and 27 degree lead azimuth.
++ 0003 - Fixed-wing target performing a constant 3g (2g?) banking descending turn toward its left; SAM launched with 14 degree elevation and 27 degree lead azimuth.
 
 In each case the SAM was launched against the target initially at 2000 meters downrange, 500 meters height above ground level, and heading 90 degrees left of the missile launch location. For a sense of relative dimensions of missile and target, the fixed-wing target shape model is scaled to about the size of a Piper M350 aircraft.
 
@@ -114,7 +114,7 @@ In each case the SAM was launched against the target initially at 2000 meters do
 
 ## Epilogue ##
 
-Over its life span the **threeD** program has retained a monolithic structure, relying on global file scope variables to minimize effort required to refactor into different code languages or tailor to host computer OS toolchains and execution processes. In the present day, with standardization and ubiquity of code development environments among MS Windows and Linux OS systems, this C code variant could surely be refactored as an implementation of C++ object oriented design patterns without detrimentally affecting OS compatibility. The verbose semantics could also be relaxed, replacing explicit vector and matrix math operations with calls to efficient library functions for example, allowing modern compilers to perform optimizations that were non-existant some 30+ years ago when **threeD** was first coded as a Pascal program on an Apple Mac.
+Over its life span the **threeD** program has retained a monolithic structure, relying on global file scope variables to minimize effort required to refactor into different code languages or tailor to host computer OS toolchains and execution processes. In the present day, with standardization and ubiquity of code development environments among MS Windows and Linux OS systems, this C code variant could surely be refactored as an implementation of C++ object oriented design patterns, and using OpenGL instead of X11, without detrimentally affecting OS compatibility. The verbose semantics could also be relaxed, replacing explicit vector and matrix math operations with calls to efficient library functions for example, allowing modern compilers to perform optimizations that were non-existant some 30+ years ago when **threeD** was first coded as a Pascal program on an Apple Mac.
 
 For those of us old enough to stroll down X11 memories lane, or young enough to enjoy tales of ancient X11 code, may I suggest the following link.
 
