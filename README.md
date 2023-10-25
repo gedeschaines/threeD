@@ -58,7 +58,7 @@ The **threeD** program is an X11 application that opens a desktop window in whic
 + [WSL2 GUI X-Server Using VcXsrv](https://www.shogan.co.uk/how-tos/wsl2-gui-x-server-using-vcxsrv/)
 + [X11 - Guide to WSL](https://www.guide2wsl.com/x11/)
 
-If needing to use ssh or rdp to connect to a running WSL Linux instance, the following /etc/wsl.conf file on the installed Linux distribution is convient.
+If needing to use ssh or rdp to connect to a running WSL Linux instance, having the following /etc/wsl.conf file on the installed Linux distribution is convenient.
 
 ```
 [boot]
