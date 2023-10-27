@@ -1217,7 +1217,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #endif
             DrawPoly3D(anElement.Info, display, drawn);
          }
-/*------ DISPLAY MISSILE STATE VARIABLES
+/*------ DISPLAY TIME, ZOOM, MISSILE AND TARGET STATE VARIABLES
 */
          XSetForeground(display,the_GC,pixels[White]);
          sprintf(numstr,"Time= %8.3f",tsec);
