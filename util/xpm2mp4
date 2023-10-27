@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #FILE:  xpm2mp4
 #DATE:  20 OCT 2023
@@ -30,13 +30,24 @@ done
 
 # Merge all JPEG files into MP4 video file.
 
-img_FPS=`grep "img_FPS" ../src/threeD.c | awk '{ print $5 }'`
-FPS=${img_FPS%;}
+FPS=`grep "img_FPS" ../src/threeD.c | gawk '{ print gensub(";","",1,$5) }'`
 
-if [ -e  /usr/bin/ffmpeg ]
+SYSNAM=`uname -a`
+
+if [ "${SYSNAM}" == "Linux" ] && [ -e  /usr/bin/ffmpeg ]
 then
   echo "Creating MP4 video:  img_anim.mp4 @ 25 fps"
   /usr/bin/ffmpeg -loglevel error -f image2 -framerate ${FPS} -i ./img_%04d.jpg -r 25 -vcodec libx264 -b:v 8000k -crf 18 -pix_fmt yuv420p ./img_anim.mp4
+  exit 0
 fi
 
+if [ "${SYSNAM%%_*}" == "CYGWIN" ] && [ -e  /usr/bin/ffmpeg ]
+then
+  echo "Creating MP4 video:  img_anim.mp4 @ 25 fps"
+  /usr/bin/ffmpeg -loglevel error -f image2 -framerate ${FPS} -i ./img_%04d.jpg -r 25 -vcodec mpeg4 -b:v 8000k -crf 18 -pix_fmt yuv420p ./img_anim.mp4
+  exit 0
+fi
+
+echo "Could not find ffmpeg to create ./img_anmi.mp4 file."
 exit 0
+
