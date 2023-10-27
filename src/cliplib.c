@@ -23,7 +23,7 @@ typedef double              Extended;
 #define zmax    10000.0  /* maximum z clipping distance         */
 
 /*
- * Caculates edge code for given pyramidal frustum edge and
+ * Calculates edge code for given pyramidal frustum edge and
  * polygon vertex point.
 */ 
 void EdgeCode( Integer edge, Pnt3D a_pt, Longint *code )
