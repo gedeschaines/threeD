@@ -4,6 +4,31 @@
  * AUTH:  G. E. Deschaines
  * DESC:  Routines to load, transform and draw polygon data describing
  *        objects in a 3D world space.
+ * 
+ * NOTE:  Cartesian coordinate frames for world space, field-of-view 
+ *        (FOV) viewport (size WxH pixels; aspect ratio (AR) of W/H),
+ *        viewport clipping frustrum (pyramid) and drawable pixmap
+ *        are depicted in the following pictograms.
+ *      
+ *                  +X                            +x
+ *        [0,0,0]   /                   [0,0,0]   /  [-W*AR/2,+W*AR/2] 
+ *           |     /                       |     /           |
+ *           \--> + ----- +Y               \--> + ----- +y <-|
+ *                |                             |       
+ *                |                             |   [-H/2,H/2]
+ *               +Z                            +z <-----/
+ * 
+ *           World Space                    FOV Viewport
+ * 
+ * 
+ *       [-H/2,+H/2]
+ *           /-> +y  +z                       [0,0]
+ *                |  /                          + ----- +x [W]
+ *                | /  [-W/AR/2,+W/AR/2]        |
+ *                + ----- +x <-/                |
+ *             [0,0,0]                         +y [H]   
+ *                
+ *           Clipping Pyramid               Drawable Pixmap
 */
 /**********************************************************************/
 
@@ -105,6 +130,7 @@ typedef struct
    Extended  zoom;
    Extended  zfovr;
    Extended  sfacx, sfacy, sfacz;
+   Extended  sfacyAR;  // sfacy scaled by viewport aspect ratio
    Extended  px, py, pz;
    Extended  x, y, z;
    Extended  p, t, r;  // yaw (psi), pitch (theta), roll (rho or phi)
@@ -348,7 +374,7 @@ void MakeMatrix ( Extended p, Extended t, Extended r )
 }
 
 /*
-* TRANSFORMS GRID WORLD SPACE COORDINATES TO CLIPPING VIEWPORT COORDINATES
+* TRANSFORMS GRID WORLD SPACE COORDINATES TO VIEWPORT COORDINATES
 */
 void XfrmGrid ()
 {
@@ -380,9 +406,9 @@ void XfrmGrid ()
       ys = dcx2*xd + dcy2*yd + dcz2*zd;
       zs = dcx3*xd + dcy3*yd + dcz3*zd;
       xs = xs;
-      ys = ys*sfacy*ratio; // account for square clipping frustrum base of fovs pixels
+      ys = ys*sfacyAR; // account for square clipping frustrum base of fovs pixels
       zs = zs*sfacz;
-/*--- SAVE CLIPPING VIEWPORT COORDINATES */
+/*--- SAVE SCALED VIEWPORT COORDINATES */
       GridPt2[k].X = xs;
       GridPt2[k].Y = ys;
       GridPt2[k].Z = zs;
@@ -390,7 +416,7 @@ void XfrmGrid ()
 }
 
 /*
- * TRANSFORMS POLYGON WORLD SPACE COORDINATES TO CLIPPING VIEWPORT COORDINATES
+ * TRANSFORMS POLYGON WORLD SPACE COORDINATES TO VIEWPORT COORDINATES
 */
 void XfrmPoly ( Integer iPol )
 {
@@ -423,9 +449,9 @@ void XfrmPoly ( Integer iPol )
       ys = dcx2*xd + dcy2*yd + dcz2*zd;
       zs = dcx3*xd + dcy3*yd + dcz3*zd;
       xs = xs;
-      ys = ys*sfacy*ratio;  // account for square clipping frustrum base of fovs pixels
+      ys = ys*sfacyAR;  // account for square clipping frustrum base of fovs pixels
       zs = zs*sfacz;
-/*--- SAVE CLIPPING VIEWPORT COORDINATES */
+/*--- SAVE SCALED VIEWPORT COORDINATES */
       aPolRec->Pt2.X = xs;
       aPolRec->Pt2.Y = ys;
       aPolRec->Pt2.Z = zs;
@@ -598,10 +624,10 @@ void DrawGrid3D( Integer iaxis, Display *display, Pixmap drawable )
             for ( i = 1 ; i < 3 ; i++ )
             {
                 xs              = vlist[pcnt][i].X;
-                ys              = vlist[pcnt][i].Y/sfacy;
+                ys              = vlist[pcnt][i].Y/sfacyAR;
                 zs              = vlist[pcnt][i].Z/sfacz;
                 sf              = fl/xs;
-                tempLine[i-1].x = lroundd(sf*ys/ratio) + floor(fovcx);
+                tempLine[i-1].x = lroundd(sf*ys) + floor(fovcx);
                 tempLine[i-1].y = lroundd(sf*zs) + floor(fovcy);
             }
             XDrawLines(display, drawable, the_GC, tempLine, 2, CoordModeOrigin);
@@ -665,10 +691,10 @@ void DrawPoly3D( Integer iPol, Display *display, Pixmap drawable )
       for ( i = 1 ; i <= vcnt[pcnt] ; i++ )
       {
          xs              = vlist[pcnt][i].X;
-         ys              = vlist[pcnt][i].Y/sfacy;
+         ys              = vlist[pcnt][i].Y/sfacyAR;
          zs              = vlist[pcnt][i].Z/sfacz;
          sf              = fl/xs;
-         tempPoly[i-1].x = lroundd(sf*ys/ratio) + floor(fovcx);
+         tempPoly[i-1].x = lroundd(sf*ys) + floor(fovcx);
          tempPoly[i-1].y = lroundd(sf*zs) + floor(fovcy);
       }
       if ( pollist[iPol].Typ >= 0 )
@@ -840,8 +866,8 @@ void draw3D (Widget w, Display *display, Window drawable)
    XtGetValues(w, args, n);
    xAspect = width;
    yAspect = height;
-   ratio = (yAspect*1.0)/(xAspect*1.0);
-   xMax  = lroundd(fovs/ratio);
+   ratio = (xAspect*1.0)/(yAspect*1.0);
+   xMax  = lroundd(fovs*ratio);
    yMax  = lroundd(fovs);
    fovcx = xMax/2.0;
    fovcy = yMax/2.0;
@@ -883,14 +909,15 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /* COMPUTE VIEWPORT FOV FOCAL LENGTHS */
 
-   tanfv = sin((fova/fTwo)*rpd)/cos((fova/fTwo)*rpd);
-   fl    = (fovs/fTwo)/tanfv;
-   sfacx = (fOne/tanfv);
-   sfacy = (fOne/tanfv);
-   sfacz = (fOne/tanfv);
+   tanfv   = sin((fova/fTwo)*rpd)/cos((fova/fTwo)*rpd);
+   fl      = (fovs/fTwo)/tanfv;
+   sfacx   = (fOne/tanfv);
+   sfacy   = (fOne/tanfv);
+   sfacyAR = sfacy/ratio;
+   sfacz   = (fOne/tanfv);
 #if DBG_LVL > 0 
    printf("draw3D:  tanfv,fl = %f %f\n",tanfv,fl);
-   printf("draw3D:  sfacx,sfacyx,sfacz = %f %f %f\n",sfacx,sfacy,sfacz);
+   printf("draw3D:  sfacx,sfacy,sfacyAR,sfacz = %f %f %f %f\n",sfacx,sfacy,sfacyAR,sfacz);
 #endif
 
 /* READ AND MAKE OBJECT POLYGONS */
@@ -980,31 +1007,34 @@ void draw3D (Widget w, Display *display, Window drawable)
                align_fov_toward_tgt = FALSE;
                break;
             case XK_z :
-               zoom = 1.0;
-               zfovr = 2.0*atan(tan(0.5*fova*rpd)/zoom);
-               tanfv = sin(zfovr/fTwo)/cos(zfovr/fTwo);
-               fl    = (fovs/fTwo)/tanfv;
-               sfacx = (fOne/tanfv);
-               sfacy = (fOne/tanfv);
-               sfacz = (fOne/tanfv);
+               zoom  =  1.0;
+               zfovr   = 2.0*atan(tan(0.5*fova*rpd)/zoom);
+               tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
+               fl      = (fovs/fTwo)/tanfv;
+               sfacx   = fOne/tanfv;
+               sfacy   = fOne/tanfv;
+               sfacyAR = sfacy/ratio;
+               sfacz   = fOne/tanfv;
                break;
             case XK_s :
-               zoom = zoom*1.25;
-               zfovr = 2.0*atan(tan(0.5*fova*rpd)/zoom);
-               tanfv = sin(zfovr/fTwo)/cos(zfovr/fTwo);
-               fl    = (fovs/fTwo)/tanfv;
-               sfacx = (fOne/tanfv);
-               sfacy = (fOne/tanfv);
-               sfacz = (fOne/tanfv);
+               zoom    = zoom*1.25;
+               zfovr   = 2.0*atan(tan(0.5*fova*rpd)/zoom);
+               tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
+               fl      = (fovs/fTwo)/tanfv;
+               sfacx   = fOne/tanfv;
+               sfacy   = fOne/tanfv;
+               sfacyAR = sfacy/ratio;
+               sfacz   = fOne/tanfv;
                break;
             case XK_a :
-               zoom = zoom/1.25;
-               zfovr = 2.0*atan(tan(0.5*fova*rpd)/zoom);
-               tanfv = sin(zfovr/fTwo)/cos(zfovr/fTwo);
-               fl    = (fovs/fTwo)/tanfv;
-               sfacx = (fOne/tanfv);
-               sfacy = (fOne/tanfv);
-               sfacz = (fOne/tanfv);
+               zoom    = zoom/1.25;
+               zfovr   = 2.0*atan(tan(0.5*fova*rpd)/zoom);
+               tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
+               fl      = (fovs/fTwo)/tanfv;
+               sfacx   = fOne/tanfv;
+               sfacy   = fOne/tanfv;
+               sfacyAR = sfacy/ratio;
+               sfacz   = fOne/tanfv;
                break;                              
             case XK_p :
                paused = ! paused;
@@ -1217,8 +1247,8 @@ void draw3D (Widget w, Display *display, Window drawable)
 #endif
             DrawPoly3D(anElement.Info, display, drawn);
          }
-/*------ DISPLAY TIME, ZOOM, MISSILE AND TARGET STATE VARIABLES
-*/
+
+/*------ DISPLAY TIME, ZOOM, MISSILE AND TARGET STATE VARIABLES */
          XSetForeground(display,the_GC,pixels[White]);
          sprintf(numstr,"Time= %8.3f",tsec);
          XDrawImageString(display,drawn,the_GC, 10,12,numstr,14);
