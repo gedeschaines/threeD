@@ -9,12 +9,12 @@
  *        (FOV) viewport (size WxH pixels; aspect ratio (AR) of W/H),
  *        viewport clipping frustrum (pyramid) and drawable pixmap
  *        are depicted in the following pictograms.
- *      
+ * 
  *                  +X                            +x
- *        [0,0,0]   /                   [0,0,0]   /  [-W*AR/2,+W*AR/2] 
+ *        [0,0,0]   /                   [0,0,0]   /  [-W*AR/2,+W*AR/2]
  *           |     /                       |     /           |
  *           \--> + ----- +Y               \--> + ----- +y <-|
- *                |                             |       
+ *                |                             |
  *                |                             |   [-H/2,H/2]
  *               +Z                            +z <-----/
  * 
@@ -26,9 +26,10 @@
  *                |  /                          + ----- +x [W]
  *                | /  [-W/AR/2,+W/AR/2]        |
  *                + ----- +x <-/                |
- *             [0,0,0]                         +y [H]   
+ *             [0,0,0]                         +y [H]
  *                
  *           Clipping Pyramid               Drawable Pixmap
+ * 
 */
 /**********************************************************************/
 
