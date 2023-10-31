@@ -168,7 +168,7 @@ typedef struct
 #define poltyp_tgt  1  /* target polygon type  */
 #define poltyp_msl  2  /* missile polygon type */
 
-/* SIXDOF TRAJECTORY INFORMATION */
+/* TXYZ TRAJECTORY INFORMATION */
 
    Extended  tsec;
    Integer   ktot;
@@ -797,6 +797,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    Arg          args[10];
    Dimension    width, height;
    Extended     tanfv;
+   Extended     true_tsec =  0.0;
    Extended     last_tsec = -1.0;
    Extended     DXTM, DYTM, DZTM, RTM, UXTM, UYTM, UZTM;
    Integer      n = 0;
@@ -1251,9 +1252,17 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /*------ DISPLAY TIME, ZOOM, MISSILE AND TARGET STATE VARIABLES */
          XSetForeground(display,the_GC,pixels[White]);
-         sprintf(numstr,"Time= %8.3f",tsec);
+         if ( ktot < 0 ) {
+            // TXYZ padded time record
+            sprintf(numstr,"Time= %8.4f",true_tsec);
+         } else {
+            // TXYZ true time record
+             sprintf(numstr,"Time= %8.4f",tsec);
+             true_tsec = tsec;
+         }
+
          XDrawImageString(display,drawn,the_GC, 10,12,numstr,14);
-         sprintf(numstr,"Zoom= %8.3f",zoom);
+         sprintf(numstr,"Zoom= %8.4f",zoom);
          XDrawImageString(display,drawn,the_GC, 10,24,numstr,14);
          sprintf(numstr,"Xm= %10.2f", XM);
          XDrawImageString(display,drawn,the_GC,100,12,numstr,14);
