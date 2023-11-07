@@ -310,11 +310,11 @@ void MakePol( Integer pntcnt,
    pollist[polcnt].Cnt1.Z = sumZ/sumP;
 #if DBG_LVL > 2
    printf("MakePol:  centroid 0 =  %f  %f  %f\n",pollist[polcnt].Cnt0.X,
-			 		         pollist[polcnt].Cnt0.Y,
-					         pollist[polcnt].Cnt0.Z);
+          pollist[polcnt].Cnt0.Y,
+         pollist[polcnt].Cnt0.Z);
    printf("MakePol:  centroid 1 =  %f  %f  %f\n",pollist[polcnt].Cnt1.X,
-					         pollist[polcnt].Cnt1.Y,
-					         pollist[polcnt].Cnt1.Z);
+         pollist[polcnt].Cnt1.Y,
+         pollist[polcnt].Cnt1.Z);
 #endif
 }
 
@@ -798,7 +798,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    Dimension    width, height;
    Extended     tanfv;
    Extended     true_tsec =  0.0;
-   Extended     last_tsec = -1.0;
+   Extended     last_tsec = -1.0/img_FPS;
    Extended     DXTM, DYTM, DZTM, RTM, UXTM, UYTM, UZTM;
    Integer      n = 0;
    Integer      i, k, itot, ipad;
@@ -1072,7 +1072,7 @@ void draw3D (Widget w, Display *display, Window drawable)
       {
 /*------ GET MISSILE AND TARGET ORIENTATION */
          fgets(sbuff,128,lfnt);
-         sscanf(sbuff,"%hd ",&ipad);
+         //sscanf(sbuff,"%hd ",&ipad);
          if ( strstr(sbuff,"     -9999     -9999") ) {
          /* PROPNAV1.MCD 3-DOF simulation trajectory output file */
             sscanf(sbuff,"%hd %hd %lf %lf %lf %lf %lf %lf\n",
@@ -1297,7 +1297,8 @@ void draw3D (Widget w, Display *display, Window drawable)
          XCopyArea(display,drawn,drawable,the_GC,0,0,xMax,yMax,0,0);
 
 /*------ SAVE DRAWN PIXMAP TO X11 PIXMAP FILE */
-         if ( (tsec - last_tsec) >= img_dtsec ) {
+         
+         if ( (tsec+0.005 - last_tsec) >= img_dtsec ) {
             sprintf(img_fname,"./Ximg/img_%04hd.xpm",img_count++);
             XpmWriteFileFromPixmap(display,img_fname,drawn,None,NULL);
             last_tsec = tsec;
