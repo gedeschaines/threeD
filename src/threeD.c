@@ -143,10 +143,12 @@ int main(argc, argv)
    printf("Press z key to reset zoom to one.\n");
    printf("Press s key to increase zoom.\n");
    printf("Press a key to decrease zoom.\n");
+   printf("Press left arrow key to slow animation down by 50 msec increments.\n");
+   printf("Press right arrow key to speed animation up by 50 msec increments.\n");
    printf("Press p key to toggle pause/unpause.\n");
 // printf("Press c key to continue.\n");
-   printf("Press q key to quit.\n");
-   printf("Press r key to replay.\n"); 
+   printf("Press q key to quit animation.\n");
+   printf("Press r key to replay animation.\n"); 
    printf("Press Esc key to exit.\n");
 
 /* Enter the event loop.

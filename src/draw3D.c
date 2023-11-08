@@ -4,12 +4,12 @@
  * AUTH:  G. E. Deschaines
  * DESC:  Routines to load, transform and draw polygon data describing
  *        objects in a 3D world space.
- * 
- * NOTE:  Cartesian coordinate frames for world space, field-of-view 
+ *
+ * NOTE:  Cartesian coordinate frames for world space, field-of-view
  *        (FOV) viewport (size WxH pixels; aspect ratio (AR) of W/H),
  *        viewport clipping frustrum (pyramid) and drawable pixmap
  *        are depicted in the following pictograms.
- * 
+ *
  *                  +X                            +x
  *        [0,0,0]   /                   [0,0,0]   /  [-W*AR/2,+W*AR/2]
  *           |     /                       |     /           |
@@ -17,19 +17,19 @@
  *                |                             |
  *                |                             |   [-H/2,H/2]
  *               +Z                            +z <-----/
- * 
+ *
  *           World Space                    FOV Viewport
- * 
- * 
+ *
+ *
  *       [-H/2,+H/2]
  *           /-> +y  +z                       [0,0]
  *                |  /                          + ----- +x [W]
  *                | /  [-W/AR/2,+W/AR/2]        |
  *                + ----- +x <-/                |
  *             [0,0,0]                         +y [H]
- *                
+ *
  *           Clipping Pyramid               Drawable Pixmap
- * 
+ *
 */
 /**********************************************************************/
 
@@ -56,7 +56,7 @@ Longint lroundd(double x)
       zero = 0.0;
       half = 0.5;
       one  = 1.0;
-      init = 0; 
+      init = 0;
    }
    if ( x == zero ) return (zero);
    if ( x <  zero ) {
@@ -77,6 +77,17 @@ double dmin(double x1, double x2)
    else           return x1;
 }
 double dmax(double x1, double x2)
+{
+   if ( x2 > x1 ) return x2;
+   else           return x1;
+}
+
+Longint lmin(Longint x1, Longint x2)
+{
+   if ( x2 < x1 ) return x2;
+   else           return x1;
+}
+Longint lmax(Longint x1, Longint x2)
 {
    if ( x2 > x1 ) return x2;
    else           return x1;
@@ -188,16 +199,14 @@ typedef struct
    Word      White  = 0;
    Word      Black  = 1;
    Word      Red    = 2;
-   Word      Green  = 3; 
+   Word      Green  = 3;
    Word      Blue   = 4;
-   Word      Cyan   = 5; 
+   Word      Cyan   = 5;
    Word      Yellow = 6;
    Word      Brown  = 7;
    Word      Colors[] = {0, 1, 2, 3, 4, 5, 6, 7};
    Longint   cpumsec1;
    Longint   cpumsec2;
-   Longint   waitmsec=0;
-
 
 /* I/O BUFFERS */
 
@@ -231,7 +240,7 @@ void MakePol( Integer pntcnt,
 #endif
 
 /* Initialize polygon list entry. */
- 
+
    pollist[polcnt].Flg = FALSE;
    pollist[polcnt].Pri = thePri*100000000;
    pollist[polcnt].Pat = thePat;
@@ -258,7 +267,7 @@ void MakePol( Integer pntcnt,
 #endif
 
 /* Initialize polygon centroid summation variables. */
-  
+
    sumP = fOne;
    sumX = newPtr->Pt0.X;
    sumY = newPtr->Pt0.Y;
@@ -325,7 +334,7 @@ void MakePol( Integer pntcnt,
 void MakeMatrix ( Extended p, Extended t, Extended r )
 {
    // RHS yaw, pitch, roll as p, t, r respectively in radians.
-   
+
    Extended  kctcp;
    Extended  kctsp;
    Extended  kstcp;
@@ -431,7 +440,7 @@ void XfrmPoly ( Integer iPol )
    HeapElement  anElement;
    Boolean      inflag;
 
-#if DBG_LVL > 3   
+#if DBG_LVL > 3
    printf("  Polygon # %d\n",iPol);
 #endif
 
@@ -456,7 +465,7 @@ void XfrmPoly ( Integer iPol )
       aPolRec->Pt2.X = xs;
       aPolRec->Pt2.Y = ys;
       aPolRec->Pt2.Z = zs;
-#if DBG_LVL > 3   
+#if DBG_LVL > 3
       printf("    - vertice  :  %f  %f  %f\n",aPolRec->Pt2.X,
                                               aPolRec->Pt2.Y,
                                               aPolRec->Pt2.Z);
@@ -469,7 +478,7 @@ void XfrmPoly ( Integer iPol )
       }
    }
    if ( ( inflag ) && ( ! FullPQ(polPQ) ) )
-   {      
+   {
       xd    = pollist[iPol].Cnt1.X - fovpt.X;
       yd    = pollist[iPol].Cnt1.Y - fovpt.Y;
       zd    = pollist[iPol].Cnt1.Z - fovpt.Z;
@@ -489,7 +498,7 @@ void XfrmPoly ( Integer iPol )
                         anElement.Info,
                              pollist[iPol].Typ,
                                   pollist[iPol].Pri,
-                                       xs, ys, zs, rsmm, irsmm); 
+                                       xs, ys, zs, rsmm, irsmm);
          quitflag = TRUE;
       }
    }
@@ -510,7 +519,7 @@ void MovePoly ( Integer iPol, Extended px, Extended py, Extended pz )
    pollist[iPol].Cnt1.X = dcx1*xb + dcx2*yb + dcx3*zb + px;
    pollist[iPol].Cnt1.Y = dcy1*xb + dcy2*yb + dcy3*zb + py;
    pollist[iPol].Cnt1.Z = dcz1*xb + dcz2*yb + dcz3*zb + pz;
-#if DBG_LVL > 3   
+#if DBG_LVL > 3
    printf("  Polygon # %d\n",iPol);
    printf("    - centroid :  %f  %f  %f\n",pollist[iPol].Cnt1.X,
                                            pollist[iPol].Cnt1.Y,
@@ -525,7 +534,7 @@ void MovePoly ( Integer iPol, Extended px, Extended py, Extended pz )
       aPolRec->Pt1.X = dcx1*xb + dcx2*yb + dcx3*zb + px;
       aPolRec->Pt1.Y = dcy1*xb + dcy2*yb + dcy3*zb + py;
       aPolRec->Pt1.Z = dcz1*xb + dcz2*yb + dcz3*zb + pz;
-#if DBG_LVL > 3   
+#if DBG_LVL > 3
       printf("    - vertice :  %f  %f  %f\n",aPolRec->Pt1.X,
                                              aPolRec->Pt1.Y,
                                              aPolRec->Pt1.Z);
@@ -718,7 +727,7 @@ void DrawPoly3D( Integer iPol, Display *display, Pixmap drawable )
 void LoadPoly ( FILE *lfni, const char* polyfile)
 {
    Integer   i,k;
-   Integer   polpnt, polpri, polcol, poltyp; 
+   Integer   polpnt, polpri, polcol, poltyp;
    Extended  polsfc;
    Extended  x, y, z;
    Extended  mdloffx, mdloffy, mdloffz, mdlsfc;
@@ -812,6 +821,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    Boolean      align_fov_toward_tgt = FALSE;
    Boolean      align_fov_toward_msl = FALSE;
    Boolean      align_fov_along_head = TRUE;
+   Longint      waitmsec = 0;
    Integer      img_count=0;
    Extended     img_dtsec=1.0/img_FPS;
    char         img_fname[24];
@@ -917,7 +927,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    sfacy   = (fOne/tanfv);
    sfacyAR = sfacy/ratio;
    sfacz   = (fOne/tanfv);
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
    printf("draw3D:  tanfv,fl = %f %f\n",tanfv,fl);
    printf("draw3D:  sfacx,sfacy,sfacyAR,sfacz = %f %f %f %f\n",sfacx,sfacy,sfacyAR,sfacz);
 #endif
@@ -928,7 +938,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    lfni = fopen("./dat/grndpoly.dat","r");
    if ( lfni )
    {
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
       printf("draw3D:  Loading polygons from file %s\n","grndpoly.dat");
 #endif
       LoadPoly(lfni,"./dat/grndpoly.dat");
@@ -938,7 +948,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    lfni = fopen("./dat/grndpgrid.dat","r");
    if ( lfni )
    {
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
       printf("draw3D:  Loading polygons from file %s\n","grndgrid.dat");
 #endif
       LoadPoly(lfni,"./dat/grndpgrid.dat");
@@ -948,7 +958,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    lfni = fopen("./dat/fwngpoly.dat","r");
    if ( lfni )
    {
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
       printf("draw3D:  Loading polygons from file %s\n","fwngpoly.dat");
 #endif
       LoadPoly(lfni,"./dat/fwngpoly.dat");
@@ -957,7 +967,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    lfni = fopen("./dat/mislpoly.dat","r");
    if ( lfni )
    {
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
       printf("draw3D:  Loading polygons from file %s\n","mislpoly.dat");
 #endif
       LoadPoly(lfni,"./dat/mislpoly.dat");
@@ -967,7 +977,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    lfni = fopen("./dat/mazepoly.dat","r");
    if ( lfni )
    {
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
      printf("draw3D:  Loading polygons from file %s\n","mazepoly.dat");
 #endif
      LoadPoly(lfni,"./dat/mazepoly.dat");
@@ -977,7 +987,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /* OPEN TRAJECTORY DATA FILE */
 
-#if DBG_LVL > 0 
+#if DBG_LVL > 0
    printf("draw3D:  Opening trajectory file %s\n","TXYZ.OUT");
 #endif
    lfnt = fopen("./TXYZ.OUT","r");
@@ -1037,7 +1047,15 @@ void draw3D (Widget w, Display *display, Window drawable)
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
                sfacz   = fOne/tanfv;
-               break;                              
+               break;
+            case XK_Right :
+               waitmsec -= 50;
+               waitmsec = lmax(0, waitmsec);
+               break;
+            case XK_Left :
+               waitmsec += 50;
+               waitmsec = lmin(500, waitmsec);
+               break;
             case XK_p :
                paused = ! paused;
                /*
@@ -1063,7 +1081,7 @@ void draw3D (Widget w, Display *display, Window drawable)
       if ( paused ) {
          continue;
       }
-      
+
 /*--- GET MISSILE AND TARGET POSITION */
       fgets(sbuff,128,lfnt);
       k = sscanf(sbuff,"%lf %hd %lf %lf %lf %lf %lf %lf\n",
@@ -1095,21 +1113,21 @@ void draw3D (Widget w, Display *display, Window drawable)
          p = PST*rpd;
          t = THT*rpd;
          r = PHT*rpd;
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("  px,py,pz,p,t,r = %f %f %f %f %f %f\n",px,py,pz,p,t,r);
 #endif
 /*------ COMPUTE POLYGON ROTATION TRANSFORMATION MATRIX */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Make target polygon transformation matrix...\n");
 #endif
          MakeMatrix(p,t,r);
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("           %f  %f  %f\n",dcx1,dcy1,dcz1);
          printf("           %f  %f  %f\n",dcx2,dcy2,dcz2);
          printf("           %f  %f  %f\n",dcx3,dcy3,dcz3);
 #endif
 /*------ MOVE TARGET POLYGONS */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Move target polygons...\n");
 #endif
          for ( i = 1 ; i <= polcnt ; i++ )
@@ -1127,21 +1145,21 @@ void draw3D (Widget w, Display *display, Window drawable)
          p = PSM*rpd;
          t = THM*rpd;
          r = PHM*rpd;
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("  px,py,pz,t,p,r = %f %f %f %f %f %f\n",px,py,pz,p,t,r);
 #endif
 /*------ COMPUTE POLYGON ROTATION TRANSFORMATION MATRIX */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Make missile polygon transformation matrix...\n");
 #endif
          MakeMatrix(p,t,r);
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("           %f  %f  %f\n",dcx1,dcy1,dcz1);
          printf("           %f  %f  %f\n",dcx2,dcy2,dcz2);
          printf("           %f  %f  %f\n",dcx3,dcy3,dcz3);
 #endif
 /*------ MOVE MISSILE POLYGONS */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Move missile polygons...\n");
 #endif
          for ( i = 1 ; i <= polcnt ; i++ )
@@ -1171,7 +1189,7 @@ void draw3D (Widget w, Display *display, Window drawable)
             t       = asin(-UZTM);       // Pitch        +/- 90 deg as both UXTM and UYTM
             r       = 0.0;               // Roll         are zero and Yaw is indeterminate.
          } else if ( align_fov_toward_msl ) {
-         /* Place fovpt near target; align fov normal axis with unit vector from target to missile */        
+         /* Place fovpt near target; align fov normal axis with unit vector from target to missile */
             fovpt.X = XT + 30.0*UXTM;
             fovpt.Y = YT + 30.0*UYTM;
             fovpt.Z = ZT + 30.0*UZTM + 15.0;
@@ -1187,29 +1205,29 @@ void draw3D (Widget w, Display *display, Window drawable)
             r       = 0.0;
          }
 /*------ COMPUTE FOV ROTATION TRANSFORMATION MATRIX */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Make field-of-view rotation matrix...\n");
 #endif
          MakeMatrix(p,t,r);
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("           %f  %f  %f\n",dcx1,dcy1,dcz1);
          printf("           %f  %f  %f\n",dcx2,dcy2,dcz2);
          printf("           %f  %f  %f\n",dcx3,dcy3,dcz3);
 #endif
 /*------ TRANSFORM GROUND PLANE POLYGON INTO VIEWING PORT */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Transform ground plane polygon...\n");
 #endif
          XfrmPoly(1);
 
 /*------ TRANSFORM GROUND PLANE GRID INTO VIEWING PORT */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Transform ground plane grid...\n");
 #endif
          XfrmGrid();
 
 /*------ TRANSFORM OBJECT POLYGONS INTO VIEWING PORT */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Transform polygons...\n");
 #endif
          ClearPQ(&polPQ);
@@ -1219,14 +1237,14 @@ void draw3D (Widget w, Display *display, Window drawable)
          }
 
 /*------ DRAW GROUND PLANE POLYGON */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Draw ground plane polygon...\n");
 #endif
          XSetLineAttributes(display,the_GC,1,LineSolid,CapButt,JoinMiter);
          DrawPoly3D(1, display, drawn);
 
 /*------ DRAW GROUND GRID PLANE */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Draw ground plane grid...\n");
 #endif
          XSetLineAttributes(display,the_GC,0,LineSolid,CapButt,JoinMiter);
@@ -1234,18 +1252,18 @@ void draw3D (Widget w, Display *display, Window drawable)
          DrawGrid3D(2, display, drawn);
 
 /*------ DRAW TARGET AND MISSILE POLYGONS */
-#if DBG_LVL > 2 
+#if DBG_LVL > 2
          printf("draw3D:  Draw target and missile polygons...\n");
 #endif
          XSetLineAttributes(display,the_GC,1,LineSolid,CapButt,JoinMiter);
          while ( ! EmptyPQ(polPQ) )
          {
             PriorityDeq(&polPQ, &anElement);
-#if DBG_LVL > 3 
+#if DBG_LVL > 3
             printf("  %ld  %hd  %hd  %ld\n", anElement.Key,
                     anElement.Info,
                     pollist[anElement.Info].Typ,
-                    pollist[anElement.Info].Pri); 
+                    pollist[anElement.Info].Pri);
 #endif
             DrawPoly3D(anElement.Info, display, drawn);
          }
@@ -1297,13 +1315,13 @@ void draw3D (Widget w, Display *display, Window drawable)
          XCopyArea(display,drawn,drawable,the_GC,0,0,xMax,yMax,0,0);
 
 /*------ SAVE DRAWN PIXMAP TO X11 PIXMAP FILE */
-         
+
          if ( (tsec+0.005 - last_tsec) >= img_dtsec ) {
             sprintf(img_fname,"./Ximg/img_%04hd.xpm",img_count++);
             XpmWriteFileFromPixmap(display,img_fname,drawn,None,NULL);
             last_tsec = tsec;
          }
-      
+
 /*------ COPY BLANK PIXMAP TO DRAWN PIXMAP */
          XCopyArea(display,blank,drawn,the_GC,0,0,xMax,yMax,0,0);
 
@@ -1325,6 +1343,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 
    XFreePixmap(display,drawn);
    XFreePixmap(display,blank);
+
 }
 
 /**********************************************************************/
