@@ -17,6 +17,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xlib.h>
+#include <X11/XKBlib.h>
 #include <X11/Xw32defs.h>
 #ifdef __linux__
 #include <X11/xpm.h>
@@ -63,7 +64,7 @@ void do_keypress(w, client_data, event)
    XKeyEvent*  event;
 {
    if ( event->type == KeyPress ) {
-      switch ( XKeycodeToKeysym(XtDisplay(w),event->keycode,0) )
+      switch ( XkbKeycodeToKeysym(XtDisplay(w), event->keycode, 0, event->state & ShiftMask ? 1 : 0 ) )
       {
       case XK_Escape : /* exit */
          XtAppSetExitFlag(XtWidgetToApplicationContext(w));

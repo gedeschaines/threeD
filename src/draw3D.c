@@ -991,7 +991,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 /*--- CHECK FOR KEYPRESS EVENT */
       if ( XCheckWindowEvent(XtDisplay(w),XtWindow(w),KeyPressMask,&event) ) {
          if ( event.type == KeyPress ) {
-            switch ( XKeycodeToKeysym(display,event.xkey.keycode,0) )
+            switch ( XkbKeycodeToKeysym(display, event.xkey.keycode, 0, event.xkey.state & ShiftMask ? 1 : 0) )
             {
             case XK_t :
                align_fov_toward_tgt = ! align_fov_toward_tgt;
