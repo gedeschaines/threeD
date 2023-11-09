@@ -8,7 +8,7 @@ ____________
   Animated GIF from threeD rendering for TXYZ.OUT.0000 (click image for YouTube video)
  </p>
 
-An antiquated X11 C program which displays animated 3D faceted solid shape rendering of missile/target engagements recorded in trajectory files output from 3-DOF and 6-DOF surface-to-air missile (SAM) flyout simulations. The 3D rendering utilizes a painter's algorithm for hidden surface removal (ref \[1]). The painter's algorithm basically draws polygons from back to front planes of a viewport clipping frustrum, and requires a sorted list of polygons ordered by their centroid distance from the view point. To maintain a dynamic sorted list of polygon centroid distances, a priority queue was selected and implemented as presented in section [2.4](http://algs4.cs.princeton.edu/24pq/) of reference \[[2](http://algs4.cs.princeton.edu/home/)].
+An antiquated X11 C program which displays animated 3D faceted solid shape rendering of missile/target engagements recorded in trajectory files output from 3-DOF and 6-DOF surface-to-air missile (SAM) flyout simulations. The 3D rendering utilizes a painter's algorithm for hidden surface removal (ref \[1]). The painter's algorithm basically draws polygons from back to front planes of a viewport clipping frustum, and requires a sorted list of polygons ordered by their centroid distance from the view point. To maintain a dynamic sorted list of polygon centroid distances, a priority queue was selected and implemented as presented in section [2.4](http://algs4.cs.princeton.edu/24pq/) of reference \[[2](http://algs4.cs.princeton.edu/home/)].
 
 ## Background ##
 

@@ -7,7 +7,7 @@
  *
  * NOTE:  Cartesian coordinate frames for world space, field-of-view
  *        (FOV) viewport (size WxH pixels; aspect ratio (AR) of W/H),
- *        viewport clipping frustrum (pyramid) and drawable pixmap
+ *        viewport clipping frustum (pyramid) and drawable pixmap
  *        are depicted in the following pictograms.
  *
  *                  +X                            +x
@@ -416,7 +416,7 @@ void XfrmGrid ()
       ys = dcx2*xd + dcy2*yd + dcz2*zd;
       zs = dcx3*xd + dcy3*yd + dcz3*zd;
       xs = xs;
-      ys = ys*sfacyAR; // account for square clipping frustrum base of fovs pixels
+      ys = ys*sfacyAR; // account for square clipping frustum base of fovs pixels
       zs = zs*sfacz;
 /*--- SAVE SCALED VIEWPORT COORDINATES */
       GridPt2[k].X = xs;
@@ -459,7 +459,7 @@ void XfrmPoly ( Integer iPol )
       ys = dcx2*xd + dcy2*yd + dcz2*zd;
       zs = dcx3*xd + dcy3*yd + dcz3*zd;
       xs = xs;
-      ys = ys*sfacyAR;  // account for square clipping frustrum base of fovs pixels
+      ys = ys*sfacyAR;  // account for square clipping frustum base of fovs pixels
       zs = zs*sfacz;
 /*--- SAVE SCALED VIEWPORT COORDINATES */
       aPolRec->Pt2.X = xs;
