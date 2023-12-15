@@ -450,6 +450,11 @@ void XfrmPoly ( Integer iPol )
 
    while ( aPolRec != NULL )
    {
+#if DBG_LVL > 4
+      printf("    - 1 vertice  :  %f  %f  %f\n",aPolRec->Pt1.X,
+                                                aPolRec->Pt1.Y,
+                                                aPolRec->Pt1.Z);
+#endif
 /*--- TRANSLATE COORDINATES INTO VIEWPORT FOV REFERENCE FRAME */
       xd = aPolRec->Pt1.X - fovpt.X;
       yd = aPolRec->Pt1.Y - fovpt.Y;
@@ -465,10 +470,10 @@ void XfrmPoly ( Integer iPol )
       aPolRec->Pt2.X = xs;
       aPolRec->Pt2.Y = ys;
       aPolRec->Pt2.Z = zs;
-#if DBG_LVL > 3
-      printf("    - vertice  :  %f  %f  %f\n",aPolRec->Pt2.X,
-                                              aPolRec->Pt2.Y,
-                                              aPolRec->Pt2.Z);
+#if DBG_LVL > 4
+      printf("    - 2 vertice  :  %f  %f  %f\n",aPolRec->Pt2.X,
+                                                aPolRec->Pt2.Y,
+                                                aPolRec->Pt2.Z);
 #endif
       aPolRec = aPolRec->Nxt;
 /*--- CHECK IF POINT IS IN FRONT OF VIEW POINT */
@@ -490,15 +495,17 @@ void XfrmPoly ( Integer iPol )
       irsmm = lroundd(rsmm);
       anElement.Key  = pcode + irsmm;
       anElement.Info = iPol;
+#if DBG_LVL > 3
+      printf("    - element:  %ld  %hd  %hd  %ld  %f  %f  %f  %f  %ld\n",
+                anElement.Key,
+                     anElement.Info,
+                           pollist[iPol].Typ,
+                                pollist[iPol].Pri,
+                                    xs, ys, zs, rsmm, irsmm);
+#endif
       PriorityEnq(&polPQ,anElement);
       if ( irsmm < 0L ) {
          printf("*** XfrmPoly:  lroundd(rsmm) < 0 for iPol=%hd\n",iPol);
-         printf("  %ld  %hd  %hd  %ld  %f  %f  %f  %f  %ld\n",
-                   anElement.Key,
-                        anElement.Info,
-                             pollist[iPol].Typ,
-                                  pollist[iPol].Pri,
-                                       xs, ys, zs, rsmm, irsmm);
          quitflag = TRUE;
       }
    }
@@ -1114,7 +1121,8 @@ void draw3D (Widget w, Display *display, Window drawable)
          t = THT*rpd;
          r = PHT*rpd;
 #if DBG_LVL > 2
-         printf("  px,py,pz,p,t,r = %f %f %f %f %f %f\n",px,py,pz,p,t,r);
+         printf("  tgt - px,py,pz,p,t,r = %f %f %f %f %f %f\n",
+                         px,py,pz,p,t,r);
 #endif
 /*------ COMPUTE POLYGON ROTATION TRANSFORMATION MATRIX */
 #if DBG_LVL > 2
@@ -1146,7 +1154,8 @@ void draw3D (Widget w, Display *display, Window drawable)
          t = THM*rpd;
          r = PHM*rpd;
 #if DBG_LVL > 2
-         printf("  px,py,pz,t,p,r = %f %f %f %f %f %f\n",px,py,pz,p,t,r);
+         printf("  msl - px,py,pz,p,t,r = %f %f %f %f %f %f\n",
+                         px,py,pz,p,t,r);
 #endif
 /*------ COMPUTE POLYGON ROTATION TRANSFORMATION MATRIX */
 #if DBG_LVL > 2
@@ -1261,9 +1270,9 @@ void draw3D (Widget w, Display *display, Window drawable)
             PriorityDeq(&polPQ, &anElement);
 #if DBG_LVL > 3
             printf("  %ld  %hd  %hd  %ld\n", anElement.Key,
-                    anElement.Info,
-                    pollist[anElement.Info].Typ,
-                    pollist[anElement.Info].Pri);
+                   anElement.Info,
+                   pollist[anElement.Info].Typ,
+                   pollist[anElement.Info].Pri);
 #endif
             DrawPoly3D(anElement.Info, display, drawn);
          }
@@ -1275,8 +1284,8 @@ void draw3D (Widget w, Display *display, Window drawable)
             sprintf(numstr,"Time= %8.4f",true_tsec);
          } else {
             // TXYZ true time record
-             sprintf(numstr,"Time= %8.4f",tsec);
-             true_tsec = tsec;
+            sprintf(numstr,"Time= %8.4f",tsec);
+            true_tsec = tsec;
          }
 
          XDrawImageString(display,drawn,the_GC, 10,12,numstr,14);
@@ -1332,6 +1341,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /*------ RESET STRING BUFFER */
          sbuff[0] = '\0';
+
       }
    }
 
