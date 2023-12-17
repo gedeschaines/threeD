@@ -13,6 +13,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <bits/time.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -137,18 +138,19 @@ int main(argc, argv)
    XtRealizeWidget(toplevel);
 
    printf("Click mouse button with cursor in threeD window to begin.\n");
-   printf("Press t key to toggle field-of-view towards target.\n");
-   printf("Press m key to toggle field-of-view towards missile.\n");
-   printf("Press h key to toggle field-of-view along missile heading.\n");
-   printf("Press z key to reset zoom to one.\n");
-   printf("Press s key to increase zoom.\n");
-   printf("Press a key to decrease zoom.\n");
-   printf("Press left arrow key to slow animation down by 50 msec increments.\n");
-   printf("Press right arrow key to speed animation up by 50 msec increments.\n");
-   printf("Press p key to toggle pause/unpause.\n");
-// printf("Press c key to continue.\n");
-   printf("Press q key to quit animation.\n");
-   printf("Press r key to replay animation.\n"); 
+   printf("Press T key to toggle field-of-view towards target.\n");
+   printf("Press M key to toggle field-of-view towards missile.\n");
+   printf("Press H key to toggle field-of-view along missile heading.\n");
+   printf("Press Z key to reset zoom to one.\n");
+   printf("Press Up Arrow key to increase zoom.\n");
+   printf("Press Down Arrow to decrease zoom.\n");
+   printf("Press 0 (zero) key to reset animation step delay to zero.\n");
+   printf("Press Left Arrow key to slow animation down by 50 msec increments.\n");
+   printf("Press Right Arrow key to speed animation up by 50 msec increments.\n");
+   printf("Press P key to toggle pause/unpause.\n");
+// printf("Press C key to continue.\n");
+   printf("Press Q key to quit animation.\n");
+   printf("Press R key to replay animation.\n"); 
    printf("Press Esc key to exit.\n");
 
 /* Enter the event loop.

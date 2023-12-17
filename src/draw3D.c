@@ -124,12 +124,13 @@ typedef struct
 
 /* CONSTANTS */
 
-   Extended  fZero = 0.0;
-   Extended  fHalf = 0.5;
-   Extended  fOne  = 1.0;
-   Extended  fTwo  = 2.0;
-   Extended  f1K   = 1000.0;
-   Extended  rpd   = 0.01745329;  /* Radian per degree */
+   Extended  fZero  = 0.0;
+   Extended  fHalf  = 0.5;
+   Extended  fOne   = 1.0;
+   Extended  fTwo   = 2.0;
+   Extended  f1K    = 1000.0;
+   Extended  rpd    = 0.01745329;  /* Radian per degree */
+   Longint   CpMsec = CLOCKS_PER_SEC/1000;
 
 /* FOV INFORMATION */
 
@@ -139,6 +140,7 @@ typedef struct
    Extended  fovcx;
    Extended  fovcy;
    Extended  fl;
+   Extended  flmin;
    Extended  zoom;
    Extended  zfovr;
    Extended  sfacx, sfacy, sfacz;
@@ -610,7 +612,7 @@ void DrawGrid3D( Integer iaxis, Display *display, Pixmap drawable )
       vlist[pcnt][1].X = GridPt2[i10].X + k*xd1;
       vlist[pcnt][2].X = GridPt2[i20].X + k*xd2;
 
-      if ( ! ((vlist[pcnt][1].X <= fl) && (vlist[pcnt][2].X <= fl)) )
+      if ( ! ((vlist[pcnt][1].X <= flmin) && (vlist[pcnt][2].X <= flmin)) )
       {
 /*------ CREATE UN-CLIPPED LINE */
          vlist[pcnt][1].Y = GridPt2[i10].Y + k*yd1;
@@ -829,8 +831,8 @@ void draw3D (Widget w, Display *display, Window drawable)
    Boolean      align_fov_toward_msl = FALSE;
    Boolean      align_fov_along_head = TRUE;
    Longint      waitmsec = 0;
-   Integer      img_count=0;
-   Extended     img_dtsec=1.0/img_FPS;
+   Integer      img_count= 0;
+   Extended     img_dtsec= 1.0/img_FPS;
    char         img_fname[24];
 
 /* GET PIXEL COLORS */
@@ -930,6 +932,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 
    tanfv   = sin((fova/fTwo)*rpd)/cos((fova/fTwo)*rpd);
    fl      = (fovs/fTwo)/tanfv;
+   flmin   = 0.1*fl;
    sfacx   = (fOne/tanfv);
    sfacy   = (fOne/tanfv);
    sfacyAR = sfacy/ratio;
@@ -1003,7 +1006,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 
    while( ! ( feof(lfnt) || quitflag ) )
    {
-      cpumsec1 = clock();
+      cpumsec1 = clock()/CpMsec;
 
 /*--- CHECK FOR KEYPRESS EVENT */
       if ( XCheckWindowEvent(XtDisplay(w),XtWindow(w),KeyPressMask,&event) ) {
@@ -1026,30 +1029,33 @@ void draw3D (Widget w, Display *display, Window drawable)
                align_fov_toward_tgt = FALSE;
                break;
             case XK_z :
-               zoom  =  1.0;
-               zfovr   = 2.0*atan(tan(0.5*fova*rpd)/zoom);
+               zoom    = fOne;
+               zfovr   = fTwo*atan(tan(fHalf*fova*rpd)/zoom);
                tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
                fl      = (fovs/fTwo)/tanfv;
+               flmin   = 0.1*fl;
                sfacx   = fOne/tanfv;
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
                sfacz   = fOne/tanfv;
                break;
-            case XK_s :
+            case XK_Up :
                zoom    = zoom*1.25;
-               zfovr   = 2.0*atan(tan(0.5*fova*rpd)/zoom);
+               zfovr   = fTwo*atan(tan(fHalf*fova*rpd)/zoom);
                tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
                fl      = (fovs/fTwo)/tanfv;
+               flmin   = 0.1*fl;
                sfacx   = fOne/tanfv;
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
                sfacz   = fOne/tanfv;
                break;
-            case XK_a :
+            case XK_Down :
                zoom    = zoom/1.25;
-               zfovr   = 2.0*atan(tan(0.5*fova*rpd)/zoom);
+               zfovr   = fTwo*atan(tan(fHalf*fova*rpd)/zoom);
                tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
                fl      = (fovs/fTwo)/tanfv;
+               flmin   = 0.1*fl;
                sfacx   = fOne/tanfv;
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
@@ -1062,6 +1068,9 @@ void draw3D (Widget w, Display *display, Window drawable)
             case XK_Left :
                waitmsec += 50;
                waitmsec = lmin(500, waitmsec);
+               break;
+            case XK_0 :
+               waitmsec = 0;
                break;
             case XK_p :
                paused = ! paused;
@@ -1336,7 +1345,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /*------ TIME DELAY */
          do {
-            cpumsec2 = clock();
+            cpumsec2 = clock()/CpMsec;
          } while ( (cpumsec2-cpumsec1) < waitmsec );
 
 /*------ RESET STRING BUFFER */
