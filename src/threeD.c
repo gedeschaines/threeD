@@ -13,7 +13,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#ifdef __linux__
 #include <bits/time.h>
+#endif
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
