@@ -937,7 +937,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    tanfv   = sin((fova/fTwo)*rpd)/cos((fova/fTwo)*rpd);
    fl      = (fovs/fTwo)/tanfv;
    flmin   = 0.1*fl;
-   sfacx   = (fOne/tanfv);
+   sfacx   = fOne;  # Not used
    sfacy   = (fOne/tanfv);
    sfacyAR = sfacy/ratio;
    sfacz   = (fOne/tanfv);
@@ -1038,7 +1038,7 @@ void draw3D (Widget w, Display *display, Window drawable)
                tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
                fl      = (fovs/fTwo)/tanfv;
                flmin   = 0.1*fl;
-               sfacx   = fOne/tanfv;
+               sfacx   = fOne;  # Not used
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
                sfacz   = fOne/tanfv;
@@ -1049,7 +1049,7 @@ void draw3D (Widget w, Display *display, Window drawable)
                tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
                fl      = (fovs/fTwo)/tanfv;
                flmin   = 0.1*fl;
-               sfacx   = fOne/tanfv;
+               sfacx   = fOne;  # Not used
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
                sfacz   = fOne/tanfv;
@@ -1060,7 +1060,7 @@ void draw3D (Widget w, Display *display, Window drawable)
                tanfv   = sin(zfovr/fTwo)/cos(zfovr/fTwo);
                fl      = (fovs/fTwo)/tanfv;
                flmin   = 0.1*fl;
-               sfacx   = fOne/tanfv;
+               sfacx   = fOne;  # Not used
                sfacy   = fOne/tanfv;
                sfacyAR = sfacy/ratio;
                sfacz   = fOne/tanfv;
