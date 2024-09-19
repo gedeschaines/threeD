@@ -13,15 +13,15 @@
  *                  +X                            +x
  *        [0,0,0]   /                   [0,0,0]   /  [-W*AR/2,+W*AR/2]
  *           |     /                       |     /           |
- *           \--> + ----- +Y               \--> + ----- +y <-|
+ *           \--> + ----- +Y               \--> + ----- +y <-/
  *                |                             |
- *                |                             |   [-H/2,H/2]
+ *                |                             |   [-H/2,+H/2]
  *               +Z                            +z <-----/
  *
  *           World Space                    FOV Viewport
  *
  *
- *       [-H/2,+H/2]
+ *        [-H/2,+H/2]
  *           /-> +y  +z                       [0,0]
  *                |  /                          + ----- +x [W]
  *                | /  [-W/AR/2,+W/AR/2]        |
@@ -29,6 +29,10 @@
  *             [0,0,0]                         +y [H]
  *
  *           Clipping Pyramid               Drawable Pixmap
+ *
+ *        The x coordinate of points in the FOV viewport are not
+ *        normalized between the FOV frustum near and far planes
+ *        as in OpenGL or other graphics libraries.
  *
 */
 /**********************************************************************/
