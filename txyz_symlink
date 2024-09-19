@@ -16,7 +16,7 @@ function remove_symlink
 # Check command line parameters
 if [ $# -lt 1 ] || [ $1 -lt 0 ] || [ $1 -gt  9999 ]
 then
-  echo "usage:  Make_symlink ####"
+  echo "usage:  txyz_symlink ####"
   echo "where:  #### is a TXYZ.OUT file run number of the form"
   echo "        0000 to 9999 inclusive."
   exit -1
