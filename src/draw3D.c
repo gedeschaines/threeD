@@ -120,8 +120,11 @@ typedef struct
   Boolean  Flg;
   Longint  Pri;
   Integer  Typ;
+  Integer  Vis;
   Pnt3D    Cnt0;
   Pnt3D    Cnt1;
+  Pnt3D    Nrm0;
+  Pnt3D    Nrm1;
   Word     Pat;
   PolPtr   Ptr;
 } Pol3D;
@@ -219,18 +222,83 @@ typedef struct
    char  sbuff[512];
 
 /*
+ * PNT_3D VECTOR MATH FUNCTIONS
+*/
+
+Extended MagP3D(Pnt3D A)
+{
+   // Return scalar m as magnitude of A.
+   Extended  msq;
+   Extended  m;
+
+   msq = A.X*A.X + A.Y*A.Y + A.Z*A.Z;
+   if (msq > 0.0) {
+      m =  sqrt(msq);
+   } else {
+      m = 0.0;
+   }
+   return m;
+}
+
+Pnt3D NrmP3D(Pnt3D A)
+{
+   // Return Pnt3D N as normalized vector of A.
+   Extended  magA;
+   Pnt3D     N;
+
+   magA = MagP3D(A);
+   if (magA > 0.0) {
+      N.X = A.X / magA;
+      N.Y = A.Y / magA;
+      N.Z = A.Z / magA;
+   } else {
+      N.X = 0.0;
+      N.Y = 0.0;
+      N.Z = 0.0;
+   }
+   return N;
+}
+
+Extended DotP3D(Pnt3D A, Pnt3D B)
+{
+   // Return scalar d as vector dot product of A and B.
+   Extended  d;
+
+   d = A.X*B.X + A.Y*B.Y + A.Z*B.Z;
+   return d;
+}
+
+Pnt3D CrossP3D(Pnt3D A, Pnt3D B)
+{
+   // Return Pnt3D C as vector cross product of A and B.
+   Pnt3D  C;
+
+   C.X = A.Y*B.Z - A.Z*B.Y;
+   C.Y = A.Z*B.X - A.X*B.Z;
+   C.Z = A.X*B.Y - A.Y*B.X;
+   return C;
+}
+
+/*
  * MAKES LINKED LIST OF POLYGON DATA FROM ARRAY OF POLYGON DATA
 */
 void MakePol( Integer pntcnt,
               Integer thePri,
-              Integer theTyp, Word thePat, Pnt3D offset )
+              Integer theTyp, 
+              Integer theVis,
+              Word thePat, Pnt3D offset )
 {
    PolPtr    newPtr;
    PolPtr    oldPtr;
+   PolPtr    aPolRec;
    Extended  sumP;
    Extended  sumX;
    Extended  sumY;
    Extended  sumZ;
+   Pnt3D     V0;
+   Pnt3D     V1;
+   Pnt3D     V01;
+   Pnt3D     NrmV01;
    Integer   i;
 
 /* Allocate memory for new polygon point record. */
@@ -251,6 +319,7 @@ void MakePol( Integer pntcnt,
    pollist[polcnt].Pri = thePri*100000000;
    pollist[polcnt].Pat = thePat;
    pollist[polcnt].Typ = theTyp;
+   pollist[polcnt].Vis = theVis;
    pollist[polcnt].Ptr = newPtr;
 
 /* Initialize first polygon point record. */
@@ -325,11 +394,42 @@ void MakePol( Integer pntcnt,
    pollist[polcnt].Cnt1.Z = sumZ/sumP;
 #if DBG_LVL > 2
    printf("MakePol:  centroid 0 =  %f  %f  %f\n",pollist[polcnt].Cnt0.X,
-          pollist[polcnt].Cnt0.Y,
+         pollist[polcnt].Cnt0.Y,
          pollist[polcnt].Cnt0.Z);
    printf("MakePol:  centroid 1 =  %f  %f  %f\n",pollist[polcnt].Cnt1.X,
          pollist[polcnt].Cnt1.Y,
          pollist[polcnt].Cnt1.Z);
+#endif
+
+/* Calculate polygon normal assuming traversal from point 0 
+   to point 1 is in a counterclockwise direction.
+*/
+   aPolRec = pollist[polcnt].Ptr;
+   V0.X = aPolRec->Pt0.X - pollist[polcnt].Cnt0.X;
+   V0.Y = aPolRec->Pt0.Y - pollist[polcnt].Cnt0.Y;
+   V0.Z = aPolRec->Pt0.Z - pollist[polcnt].Cnt0.Z;
+   aPolRec = aPolRec->Nxt;
+   V1.X = aPolRec->Pt0.X - pollist[polcnt].Cnt0.X;
+   V1.Y = aPolRec->Pt0.Y - pollist[polcnt].Cnt0.Y;
+   V1.Z = aPolRec->Pt0.Z - pollist[polcnt].Cnt0.Z;
+
+   V01    = CrossP3D(V0, V1);
+   NrmV01 = NrmP3D(V01);
+
+   pollist[polcnt].Nrm0.X = NrmV01.X;
+   pollist[polcnt].Nrm0.Y = NrmV01.Y;
+   pollist[polcnt].Nrm0.Z = NrmV01.Z;
+   pollist[polcnt].Nrm1.X = NrmV01.X;
+   pollist[polcnt].Nrm1.Y = NrmV01.Y;
+   pollist[polcnt].Nrm1.Z = NrmV01.Z;
+
+#if DBG_LVL > 2
+printf("MakePol:  normal 0 =  %f  %f  %f\n",pollist[polcnt].Nrm0.X,
+      pollist[polcnt].Nrm0.Y,
+      pollist[polcnt].Nrm0.Z);
+printf("MakePol:  normal 1 =  %f  %f  %f\n",pollist[polcnt].Nrm1.X,
+      pollist[polcnt].Nrm1.Y,
+      pollist[polcnt].Nrm1.Z);
 #endif
 }
 
@@ -398,18 +498,34 @@ void XfrmGrid ()
    Extended  xd, yd, zd;
    Extended  xs, ys, zs;
 
-   GridPt1[0].X =  2000.0;
-   GridPt1[0].Y = -2000.0;
-   GridPt1[0].Z =     0.0;
-   GridPt1[1].X =  2000.0;
-   GridPt1[1].Y =  2000.0;
-   GridPt1[1].Z =     0.0;
-   GridPt1[2].X = -2000.0;
-   GridPt1[2].Y =  2000.0;
-   GridPt1[2].Z =     0.0;
-   GridPt1[3].X = -2000.0;
-   GridPt1[3].Y = -2000.0;
-   GridPt1[3].Z =     0.0;
+   if ( msl_TYP == 1 ){
+      GridPt1[0].X =  2000.0;
+      GridPt1[0].Y = -2000.0;
+      GridPt1[0].Z =     0.0;
+      GridPt1[1].X =  2000.0;
+      GridPt1[1].Y =  2000.0;
+      GridPt1[1].Z =     0.0;
+      GridPt1[2].X = -2000.0;
+      GridPt1[2].Y =  2000.0;
+      GridPt1[2].Z =     0.0;
+      GridPt1[3].X = -2000.0;
+      GridPt1[3].Y = -2000.0;
+      GridPt1[3].Z =     0.0;
+   } else {
+      GridPt1[0].X =  20000.0;
+      GridPt1[0].Y = -16000.0;
+      GridPt1[0].Z =      0.0;
+      GridPt1[1].X =  20000.0;
+      GridPt1[1].Y =   4000.0;
+      GridPt1[1].Z =      0.0;
+      GridPt1[2].X =      0.0;
+      GridPt1[2].Y =   4000.0;
+      GridPt1[2].Z =      0.0;
+      GridPt1[3].X =      0.0;
+      GridPt1[3].Y = -16000.0;
+      GridPt1[3].Z =      0.0;
+   }
+
 
    for ( k = 0 ; k < 4 ; k++ )
    {
@@ -437,6 +553,11 @@ void XfrmGrid ()
 void XfrmPoly ( Integer iPol )
 {
    PolPtr       aPolRec;
+   Extended     eye1x, eye1y, eye1z;
+   Extended     eye2x, eye2y, eye2z;
+   Pnt3D        nrm1;
+   Extended     nrm2x, nrm2y, nrm2z;
+   Extended     dotp;
    Extended     xd, yd, zd;
    Extended     xs, ys, zs;
    Extended     rs;
@@ -449,6 +570,31 @@ void XfrmPoly ( Integer iPol )
 #if DBG_LVL > 3
    printf("  Polygon # %d\n",iPol);
 #endif
+
+   /* Compute eye vector to polygon centroid in viewport frame. */
+        
+   eye1x = pollist[iPol].Cnt1.X - fovpt.X;
+   eye1y = pollist[iPol].Cnt1.Y - fovpt.Y;
+   eye1z = pollist[iPol].Cnt1.Z - fovpt.Z;
+   eye2x = dcx1*eye1x + dcy1*eye1y + dcz1*eye1z;
+   eye2y = dcx2*eye1x + dcy2*eye1y + dcz2*eye1z;
+   eye2z = dcx3*eye1x + dcy3*eye1y + dcz3*eye1z;
+
+   /* Check if polygon surface is visible. */
+
+   if (pollist[iPol].Vis > 1) {
+      nrm1  = pollist[iPol].Nrm1;
+      nrm2x = dcx1*nrm1.X + dcy1*nrm1.Y + dcz1*nrm1.Z;
+      nrm2y = dcx2*nrm1.X + dcy2*nrm1.Y + dcz2*nrm1.Z;
+      nrm2z = dcx3*nrm1.X + dcy3*nrm1.Y + dcz3*nrm1.Z;
+      dotp  = nrm2x*eye2x + nrm2y*eye2y + nrm2z*eye2z;
+      if (dotp > 0.0) {
+         pollist[iPol].Flg = FALSE;
+         return;
+      }
+   }
+
+   /* Compute screen coordinates for polygon vertice. */
 
    inflag  = FALSE;
    pcode   = pollist[iPol].Pri;
@@ -488,26 +634,24 @@ void XfrmPoly ( Integer iPol )
          inflag = TRUE;
       }
    }
+
+   /* Enque polygon if at least one vertice is in the viewport. */
+
    if ( ( inflag ) && ( ! FullPQ(polPQ) ) )
    {
-      xd    = pollist[iPol].Cnt1.X - fovpt.X;
-      yd    = pollist[iPol].Cnt1.Y - fovpt.Y;
-      zd    = pollist[iPol].Cnt1.Z - fovpt.Z;
-      xs    = dcx1*xd + dcy1*yd + dcz1*zd;
-      ys    = dcx2*xd + dcy2*yd + dcz2*zd;
-      zs    = dcx3*xd + dcy3*yd + dcz3*zd;
-      rs    = sqrt(xs*xs + ys*ys + zs*zs);
+      rs    = sqrt(eye2x*eye2x+ eye2y*eye2y + eye2z*eye2z);
       rsmm  = rs*f1K;
       irsmm = lroundd(rsmm);
       anElement.Key  = pcode + irsmm;
       anElement.Info = iPol;
 #if DBG_LVL > 3
-      printf("    - element:  %ld  %hd  %hd  %ld  %f  %f  %f  %f  %ld\n",
-                anElement.Key,
-                     anElement.Info,
-                           pollist[iPol].Typ,
-                                pollist[iPol].Pri,
-                                    xs, ys, zs, rsmm, irsmm);
+      printf("    - element:  %ld  %hd  %hd  %hd  %ld  %f  %f  %f  %f  %ld\n",
+               anElement.Key,
+                  anElement.Info,
+                        pollist[iPol].Typ,
+                              pollist[iPol].Vis,
+                                 pollist[iPol].Pri,
+                                    eye2x, eye2y, eye2z, rsmm, irsmm);
 #endif
       PriorityEnq(&polPQ,anElement);
       if ( irsmm < 0L ) {
@@ -525,7 +669,13 @@ void MovePoly ( Integer iPol, Extended px, Extended py, Extended pz )
 {
    PolPtr    aPolRec;
    Extended  xb, yb, zb;
+   Pnt3D     V0;
+   Pnt3D     V1;
+   Pnt3D     V01;
+   Pnt3D     NrmV01;
 
+   /* Move the polygon centroid.
+   */
    xb                   = pollist[iPol].Cnt0.X;
    yb                   = pollist[iPol].Cnt0.Y;
    zb                   = pollist[iPol].Cnt0.Z;
@@ -538,6 +688,9 @@ void MovePoly ( Integer iPol, Extended px, Extended py, Extended pz )
                                            pollist[iPol].Cnt1.Y,
                                            pollist[iPol].Cnt1.Z);
 #endif
+
+   /* Move the polygon vertice.
+   */
    aPolRec = pollist[iPol].Ptr;
    while ( aPolRec != NULL )
    {
@@ -554,6 +707,25 @@ void MovePoly ( Integer iPol, Extended px, Extended py, Extended pz )
 #endif
       aPolRec        = aPolRec->Nxt;
    }
+
+   /* Compute moved polygon normal assuming traversal from point 0 
+      to point 1 is in a counterclockwise direction.
+   */
+   aPolRec = pollist[iPol].Ptr;
+   V0.X = aPolRec->Pt1.X - pollist[iPol].Cnt1.X;
+   V0.Y = aPolRec->Pt1.Y - pollist[iPol].Cnt1.Y;
+   V0.Z = aPolRec->Pt1.Z - pollist[iPol].Cnt1.Z;
+   aPolRec = aPolRec->Nxt;
+   V1.X = aPolRec->Pt1.X - pollist[iPol].Cnt1.X;
+   V1.Y = aPolRec->Pt1.Y - pollist[iPol].Cnt1.Y;
+   V1.Z = aPolRec->Pt1.Z - pollist[iPol].Cnt1.Z;
+   
+   V01    = CrossP3D(V0, V1);
+   NrmV01 = NrmP3D(V01);
+   
+   pollist[iPol].Nrm1.X = NrmV01.X;
+   pollist[iPol].Nrm1.Y = NrmV01.Y;
+   pollist[iPol].Nrm1.Z = NrmV01.Z;
 }
 
 #include "cliplib.c"
@@ -720,7 +892,7 @@ void DrawPoly3D( Integer iPol, Display *display, Pixmap drawable )
          tempPoly[i-1].x = lroundd(sf*ys) + floor(fovcx);
          tempPoly[i-1].y = lroundd(sf*zs) + floor(fovcy);
       }
-      if ( pollist[iPol].Typ >= 0 )
+      if ( pollist[iPol].Vis > 0 )
       {
          XSetForeground(display,the_GC,pixels[pollist[iPol].Pat]);
          XFillPolygon(display, drawable, the_GC,
@@ -740,7 +912,7 @@ void DrawPoly3D( Integer iPol, Display *display, Pixmap drawable )
 void LoadPoly ( FILE *lfni, const char* polyfile)
 {
    Integer   i,k;
-   Integer   polpnt, polpri, polcol, poltyp;
+   Integer   polpnt, polpri, polcol, poltyp, polvis;
    Extended  polsfc;
    Extended  x, y, z;
    Extended  mdloffx, mdloffy, mdloffz, mdlsfc;
@@ -749,7 +921,7 @@ void LoadPoly ( FILE *lfni, const char* polyfile)
    char      polnam[60];
 
    static char fmt0[]="%lf %lf %lf %lf %s\n";
-   static char fmt1[]="%hd %hd %hd %hd %lf %s\n";
+   static char fmt1[]="%hd %hd %hd %hd %hd %lf %s\n";
    static char fmt2[]="%lf %lf %lf\n";
 
 /* Read shape model offsets, scaling factor and name record. */
@@ -767,12 +939,12 @@ void LoadPoly ( FILE *lfni, const char* polyfile)
    do {
 /*+++ Load polygon specification record. */
       sptr = fgets(sbuff,132,lfni);
-      k = sscanf(sbuff,fmt1,&polpnt,&polpri,&polcol,&poltyp,&polsfc,polnam);
-      if ( k == 6 )
+      k = sscanf(sbuff,fmt1,&polpnt,&polpri,&polcol,&poltyp,&polvis,&polsfc,polnam);
+      if ( k == 7 )
       {
 #if DBG_LVL > 1
-         printf("LoadPoly:  Loaded specs -  %d  %d  %d  %d  %f  %s\n",
-                 polpnt,polpri,polcol,poltyp,polsfc,polnam);
+         printf("LoadPoly:  Loaded specs -  %d  %d  %d  %d  %d  %f  %s\n",
+                 polpnt,polpri,polcol,poltyp,polvis,polsfc,polnam);
 #endif
 /*++++++ Load vertex points. */
          for ( i = 1 ; i <= polpnt ; i++ )
@@ -806,9 +978,9 @@ void LoadPoly ( FILE *lfni, const char* polyfile)
                                                            offset.Z);
 #endif
          if ( (polcol >= 0) && (polcol< 8) ) {
-            MakePol(polpnt,polpri,poltyp,Colors[polcol],offset);
+            MakePol(polpnt,polpri,poltyp,polvis,Colors[polcol],offset);
          } else {
-            MakePol(polpnt,polpri,poltyp,Black,offset);
+            MakePol(polpnt,polpri,poltyp,polvis,Black,offset);
          }
       }
    } while ( ! ( feof(lfni) || (polcnt == maxpol) ) );
@@ -834,10 +1006,13 @@ void draw3D (Widget w, Display *display, Window drawable)
    Boolean      align_fov_toward_tgt = FALSE;
    Boolean      align_fov_toward_msl = FALSE;
    Boolean      align_fov_along_head = TRUE;
-   Longint      waitmsec = 0;
+   Longint      waitmsec = 10;
    Integer      img_count= 0;
    Extended     img_dtsec= 1.0/img_FPS;
-   char         img_fname[24];
+   char         imgout_fpath[24];
+   char         grndpoly_fpath[24];
+   char         mislpoly_fpath[24];
+   char         txyzout_fpath[24];
 
 /* GET PIXEL COLORS */
 
@@ -949,26 +1124,18 @@ void draw3D (Widget w, Display *display, Window drawable)
 /* READ AND MAKE OBJECT POLYGONS */
 
    polcnt = 0;
-   lfni = fopen("./dat/grndpoly.dat","r");
+
+   sprintf(grndpoly_fpath,"./dat/grndpoly%1hd.dat",msl_TYP);
+   lfni = fopen(grndpoly_fpath,"r");
    if ( lfni )
    {
 #if DBG_LVL > 0
-      printf("draw3D:  Loading polygons from file %s\n","grndpoly.dat");
+      printf("draw3D:  Loading polygons from file %s\n",grndpoly_fpath);
 #endif
-      LoadPoly(lfni,"./dat/grndpoly.dat");
+      LoadPoly(lfni,grndpoly_fpath);
       fclose(lfni);
    }
-/*
-   lfni = fopen("./dat/grndpgrid.dat","r");
-   if ( lfni )
-   {
-#if DBG_LVL > 0
-      printf("draw3D:  Loading polygons from file %s\n","grndgrid.dat");
-#endif
-      LoadPoly(lfni,"./dat/grndpgrid.dat");
-      fclose(lfni);
-   }
-*/
+
    lfni = fopen("./dat/fwngpoly.dat","r");
    if ( lfni )
    {
@@ -978,33 +1145,25 @@ void draw3D (Widget w, Display *display, Window drawable)
       LoadPoly(lfni,"./dat/fwngpoly.dat");
       fclose(lfni);
    }
-   lfni = fopen("./dat/mislpoly.dat","r");
+
+   sprintf(mislpoly_fpath,"./dat/mislpoly%1hd.dat",msl_TYP);
+   lfni = fopen(mislpoly_fpath,"r");
    if ( lfni )
    {
 #if DBG_LVL > 0
-      printf("draw3D:  Loading polygons from file %s\n","mislpoly.dat");
+      printf("draw3D:  Loading polygons from file %s\n",mislpoly_fpath);
 #endif
-      LoadPoly(lfni,"./dat/mislpoly.dat");
+      LoadPoly(lfni,mislpoly_fpath);
       fclose(lfni);
    }
-/*
-   lfni = fopen("./dat/mazepoly.dat","r");
-   if ( lfni )
-   {
-#if DBG_LVL > 0
-     printf("draw3D:  Loading polygons from file %s\n","mazepoly.dat");
-#endif
-     LoadPoly(lfni,"./dat/mazepoly.dat");
-     fclose(lfni);
-   }
-*/
 
 /* OPEN TRAJECTORY DATA FILE */
 
+   sprintf(txyzout_fpath,"./txyz/TXYZ.OUT.%04hd",run_NUM);
 #if DBG_LVL > 0
-   printf("draw3D:  Opening trajectory file %s\n","TXYZ.OUT");
+   printf("draw3D:  Opening trajectory file %s\n",txyzout_fpath);
 #endif
-   lfnt = fopen("./TXYZ.OUT","r");
+   lfnt = fopen(txyzout_fpath,"r");
 
 /* MAIN PROCESSING LOOP OVER TRAJECTORY DATA FILE */
 
@@ -1066,17 +1225,25 @@ void draw3D (Widget w, Display *display, Window drawable)
                sfacz   = fOne/tanfv;
                break;
             case XK_Right :
-               waitmsec -= 50;
-               waitmsec = lmax(0, waitmsec);
+               waitmsec -= 10;
+               if ( img_OUT == 1 ) {
+                  waitmsec = lmax(0, waitmsec);
+               } else {
+                  waitmsec = lmax(10, waitmsec);
+               }
                break;
             case XK_Left :
-               waitmsec += 50;
-               waitmsec = lmin(500, waitmsec);
+               waitmsec += 10;
+               waitmsec = lmin(250, waitmsec);
                break;
             case XK_0 :
-               waitmsec = 0;
+               if ( img_OUT == 1 ) {
+                  waitmsec = 0;
+               } else {
+                  waitmsec = 10;
+               }
                break;
-            case XK_p :
+            case XK_space :
                paused = ! paused;
                /*
                do {
@@ -1153,7 +1320,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #endif
          for ( i = 1 ; i <= polcnt ; i++ )
          {
-            if ( abs(pollist[i].Typ) == poltyp_tgt )
+            if ( pollist[i].Typ == poltyp_tgt )
             {
                MovePoly(i,px,py,pz);
             }
@@ -1186,7 +1353,7 @@ void draw3D (Widget w, Display *display, Window drawable)
 #endif
          for ( i = 1 ; i <= polcnt ; i++ )
          {
-            if ( abs(pollist[i].Typ) == poltyp_msl )
+            if ( pollist[i].Typ == poltyp_msl )
             {
                MovePoly(i,px,py,pz);
             }
@@ -1263,7 +1430,9 @@ void draw3D (Widget w, Display *display, Window drawable)
          printf("draw3D:  Draw ground plane polygon...\n");
 #endif
          XSetLineAttributes(display,the_GC,1,LineSolid,CapButt,JoinMiter);
-         DrawPoly3D(1, display, drawn);
+         if ( pollist[1].Flg ) {
+            DrawPoly3D(1, display, drawn);
+         }
 
 /*------ DRAW GROUND GRID PLANE */
 #if DBG_LVL > 2
@@ -1282,9 +1451,10 @@ void draw3D (Widget w, Display *display, Window drawable)
          {
             PriorityDeq(&polPQ, &anElement);
 #if DBG_LVL > 3
-            printf("  %ld  %hd  %hd  %ld\n", anElement.Key,
+            printf("  %ld  %hd  %hd  %hd  %ld\n", anElement.Key,
                    anElement.Info,
                    pollist[anElement.Info].Typ,
+                   pollist[anElement.Info].Vis,
                    pollist[anElement.Info].Pri);
 #endif
             DrawPoly3D(anElement.Info, display, drawn);
@@ -1338,10 +1508,12 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /*------ SAVE DRAWN PIXMAP TO X11 PIXMAP FILE */
 
-         if ( (tsec+0.005 - last_tsec) >= img_dtsec ) {
-            sprintf(img_fname,"./Ximg/img_%04hd.xpm",img_count++);
-            XpmWriteFileFromPixmap(display,img_fname,drawn,None,NULL);
-            last_tsec = tsec;
+         if ( img_OUT == 1) {
+            if ( (tsec+0.005 - last_tsec) >= img_dtsec  ) {
+               sprintf(imgout_fpath,"./Ximg/img_%04hd.xpm",img_count++);
+               XpmWriteFileFromPixmap(display,imgout_fpath,drawn,None,NULL);
+               last_tsec = tsec;
+            }
          }
 
 /*------ COPY BLANK PIXMAP TO DRAWN PIXMAP */

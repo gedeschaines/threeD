@@ -1,4 +1,8 @@
 bin/
+out/TXYZ.OUT.*
+!out/TXYZ.OUT.000*
+!out/TXYZ.OUT.1234
+!out/TXYZ.OUT.2130
 Ximg/
 TXYZ.OUT
 .code-workspace

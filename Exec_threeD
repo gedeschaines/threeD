@@ -3,25 +3,45 @@
 #FILE:  Exec_threeD
 #DATE:  23 FEB 2004
 #AUTH:  G. E. Deschaines
-#DESC:  Execute threeD.exe with specified trajectory output file.
+#DESC:  Execute threeD.exe with specified trajectory output file,
+#       missile type code, and rendered image output switch.
 
-function remove_symlink
+function display_usage
 {
-  if [ -h TXYZ.OUT ]
-  then
-    rm -f ./TXYZ.OUT
-  fi
-}
-
-# Check command line parameters
-if [ $# -lt 1 ] || [ $1 -lt 0 ] || [ $1 -gt  9999 ]
-then
-  echo "usage:  Exec_threeD ####"
+  echo "usage:  Exec_threeD #### [1|2] [0|1]"
   echo "where:  #### is a TXYZ.OUT file run number of the form"
   echo "        0000 to 9999 inclusive."
+  echo "        [1|2] a missile type code: 1=MANPAD, 2=AIM-9"
+  echo "        [0|1] rendered image output switch: 0=no, 1=yes"
+}
+
+# Set run number.
+if [ $# -lt 1 ] || [ $1 -lt 0 ] || [ $1 -gt  9999 ]
+then
+  display_usage
   exit -1
 fi
 run=$1
+
+# Set missile type code.
+msltyp=1
+if [ $# -gt 1 ] && [ $2 -ge 1 ] && [ $2 -le 2 ]
+then
+  msltyp=$2
+else
+  display_usage
+  exit -1
+fi
+
+# Set rendered image output switch.
+imgout=0
+if [ $# -gt 2 ] && [ $3 -ge 0 ] && [ $3 -le 1 ] 
+then
+  imgout=$3
+else
+  display_usage
+  exit -1
+fi
 
 # Check if threeD executable file exists.
 if [ ! -e ./bin/threeD.exe ]
@@ -40,20 +60,13 @@ then
 fi
 
 # Create ./Ximg subdirectory is not present.
-if [ ! -d ./Ximg ]
+if [ "${imgout}" == "1" ] && [ ! -d ./Ximg ]
 then
   mkdir ./Ximg
 fi
-
-# Remove previous symbolic link TXYZ.OUT (if it exists) and
-# create symbolic link to specified trajectory output file
-# as TXYZ.OUT, which threeD loads.
-remove_symlink
-ln -s ./txyz/${file} ./TXYZ.OUT
    
 # Initiate execution of threeD.
-./bin/threeD.exe
+./bin/threeD.exe "${run}" "${msltyp}" "${imgout}"
 
-# Remove symbolic link TXYZ.OUT.
-remove_symlink
+# Terminate this shell script.
 exit 0

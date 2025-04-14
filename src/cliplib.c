@@ -20,7 +20,7 @@ typedef double              Extended;
 
 #define mxvcnt  32       /* maximum vertices in clipped polygon */
 #define zmin        0.1  /* minimum z clipping distance         */
-#define zmax    10000.0  /* maximum z clipping distance         */
+#define zmax    20000.0  /* maximum z clipping distance         */
 
 /*
  * Calculates edge code for given pyramidal frustum edge and

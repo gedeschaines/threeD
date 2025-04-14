@@ -35,6 +35,9 @@
 static GC         the_GC;
 static XGCValues  the_GCv;
 static int        img_FPS = 50;
+static int        run_NUM = 0;
+static int        msl_TYP = 1;
+static int        img_OUT = 0;
 static Pixel      pixels[8];
 static Boolean    quitflag = FALSE;
 
@@ -92,6 +95,30 @@ int main(argc, argv)
    Arg           wargs[10];
    int           n=0;
 
+/* Process execution command line arguments.
+*/
+   /* Trajectory run number. */
+   if (argc > 1) {
+      int i = atoi(argv[1]);
+      if ((i >= 0) && (i <= 9999)) {
+         run_NUM = i;
+      }
+   }
+   /* Missile type code. */
+   if (argc > 2) {
+      int i = atoi(argv[2]);
+      if (i == 2) {
+         msl_TYP = i;
+      }
+   }
+   /* Rendered image output switch. */
+   if (argc > 3) {
+      int i = atoi(argv[3]);
+      if (i == 1) {
+         img_OUT = i;
+      }
+   }
+
 /* Initialize the X Toolkit Intrinsics.
 */
    XtToolkitInitialize();
@@ -147,9 +174,9 @@ int main(argc, argv)
    printf("Press Up Arrow key to increase zoom.\n");
    printf("Press Down Arrow to decrease zoom.\n");
    printf("Press 0 (zero) key to reset animation step delay to zero.\n");
-   printf("Press Left Arrow key to slow animation down by 50 msec increments.\n");
-   printf("Press Right Arrow key to speed animation up by 50 msec increments.\n");
-   printf("Press P key to toggle pause/unpause.\n");
+   printf("Press Left Arrow key to slow animation down by 10 msec increments.\n");
+   printf("Press Right Arrow key to speed animation up by 10 msec increments.\n");
+   printf("Press SPACE key to toggle pause/unpause.\n");
 // printf("Press C key to continue.\n");
    printf("Press Q key to quit animation.\n");
    printf("Press R key to replay animation.\n"); 

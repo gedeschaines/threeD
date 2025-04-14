@@ -32,7 +32,7 @@ The contents of each subdirectory are as follows:
 
 + .vscode - MS Visual Studio Code workspace task and launch settings JSON files.
 + bin - **threeD** program executable **(Exists only in local repository workspace)**
-+ dat - Facet model polygon data files for missile, target, ground grid and plane.  
++ dat - Facet model polygon data files for missile, target, and ground plane.
 + doc - Usage and informational documentation (e.g., [Discord_Post_1](./doc/Discord_post_1.md))
 + src - C source code files comprising the **threeD** program
 + txyz - TXZY.OUT trajectory data files for sample missile/target engagement cases
@@ -77,7 +77,7 @@ From within the ./threeD directory, invoke **./Make_threeD** to build "./bin/thr
 This step only needs to be performed when the **threeD** repository is first installed, and after any code changes have been made to **threeD** source files.
 
 ### 2. Render animation and capture image sequence ###
-From within the ./threeD directory, invoke **./Exec_threeD** with a specified TXYZ.OUT case number (i.e.,  0000, 0001, 0002 or 0003).
+From within the ./threeD directory, invoke **./Exec_threeD** with a specified TXYZ.OUT case number (i.e.,  0000, 0001, 0002 or 0003), representative missile type code (1 for SAM, 2 for AAM), and rendered image output switch (0=No, 1=Yes).
 
 A blank threeD display window should appear on the desktop and keypress options to control the animation printed in the terminal window. Animation starts by clicking a mouse button when the mouse cursor is placed within the threeD display window. Keypresses are only effective if the mouse cursor is within the display window. Pressing the "Esc" key or closing the threeD display window will terminate the program.
 
@@ -90,7 +90,7 @@ Note, to prevent captured and converted images from a previous **threeD** execut
 
 All input facet model shape polygon data file paths are hard coded in the draw3D.c file. This was done to shift the task of assigning file paths to OS shell scripts external to **threeD** for batch processing management. Although the program is now interactive, batch processing use cases were not human-in-the-loop.
 
-Quadrilateral polygons are used for shape facets, instead of triangles as in modern surface mesh models, since it was easier and faster to decompose missile and target shapes, and ground plane grids into quad patches. Also, there was no requirement to calculate accurate surface normals to model realistic lighting effects or perform face culling. Each facet is assigned a constant fill color, and considered visible on both surfaces. Consistency in direction around perimeter of a shape model facet that polygon vertice are specified should be maintained to facilitate possibilty of face culling being introduced in future rendering enhancements. Currently, the order adheres to right-hand-rule such that the positive normal is in a facet's +Z direction.
+Quadrilateral polygons are used for most shape facets, instead of triangles as in modern surface mesh models, since it was easier and faster to decompose missile and target shapes, and ground plane grids into quad patches. Although there was no requirement to calculate accurate surface normals to model realistic lighting effects, surface normals are calculated and used for face culling if a polygon "Vis" parameter is set to 2. Each facet is assigned a constant fill color, and considered visible on both surfaces if the polygon "Vis" parameter is set to 1, and considered as unfilled if the "Vis" parameter is set to 0. Consistency in direction around perimeter of a shape model facet that polygon vertice are specified should be maintained to facilitate face culling. Currently, the order adheres to counterclockwise right-hand-rule such that the normal calculated from V0 cross V1 using vectors of first two vertice positions with respect to polygon centroid (i.e., V0 and V1) indicates a visible surface if pointing toward an observer's eye.
 
 There is no attempt to resolve problems rendering intersecting polygons. Other than time of intercept, as missile impacts target, adjoined polygons do not intersect others.
 
