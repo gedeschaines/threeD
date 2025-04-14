@@ -1,7 +1,7 @@
 bin/
 txyz/TXYZ.OUT.*
-!tzyz/TXYZ.OUT.000*
-!txyz/TXYZ.OUT.1243
+!txyz/TXYZ.OUT.000*
+!txyz/TXYZ.OUT.124*
 !txyz/TXYZ.OUT.2130
 Ximg/
 TXYZ.OUT
