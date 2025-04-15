@@ -37,6 +37,45 @@
 */
 /**********************************************************************/
 
+/* Following #ifndef THREED_C block eliminates problems detected in
+ * VS Code Editor when this file not included in threeD.c file.
+*/
+#ifndef THREED_C
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#ifdef __linux__
+#include <bits/time.h>
+#endif
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
+#include <X11/Shell.h>
+#include <X11/Xlib.h>
+#include <X11/XKBlib.h>
+#include <X11/Xw32defs.h>
+#ifdef __linux__
+#include <X11/xpm.h>
+#endif
+#ifdef __CYGWIN__
+#include <X11/Xpm.h>
+#endif
+#include <X11/keysym.h>
+#include <Xm/Xm.h>
+#include <Xm/DrawingA.h>
+
+static GC         the_GC;
+static XGCValues  the_GCv;
+static int        img_FPS = 50;
+static int        run_NUM = 0;
+static int        msl_TYP = 1;
+static int        img_OUT = 0;
+static Pixel      pixels[8];
+static Boolean    quitflag = FALSE;
+#endif
+
 #ifndef THREED_TYPES
 #define THREED_TYPES
 typedef short int           Integer;
@@ -131,58 +170,58 @@ typedef struct
 
 /* CONSTANTS */
 
-   Extended  fZero  = 0.0;
-   Extended  fHalf  = 0.5;
-   Extended  fOne   = 1.0;
-   Extended  fTwo   = 2.0;
-   Extended  f1K    = 1000.0;
-   Extended  rpd    = 0.01745329;  /* Radian per degree */
-   Longint   CpMsec = CLOCKS_PER_SEC/1000;
+Extended  fZero  = 0.0;
+Extended  fHalf  = 0.5;
+Extended  fOne   = 1.0;
+Extended  fTwo   = 2.0;
+Extended  f1K    = 1000.0;
+Extended  rpd    = 0.01745329;  /* Radian per degree */
+Longint   CpMsec = CLOCKS_PER_SEC/1000;
 
 /* FOV INFORMATION */
 
-   Extended  fova =  90.0;  /* Field-of-View whole angle (deg)     */
-   Extended  fovs = 600.0;  /* Field-of-View display size (pixels) */
-   Extended  ratio;
-   Extended  fovcx;
-   Extended  fovcy;
-   Extended  fl;
-   Extended  flmin;
-   Extended  zoom;
-   Extended  zfovr;
-   Extended  sfacx, sfacy, sfacz;
-   Extended  sfacyAR;  // sfacy scaled by viewport aspect ratio
-   Extended  px, py, pz;
-   Extended  x, y, z;
-   Extended  p, t, r;  // yaw (psi), pitch (theta), roll (rho or phi)
-   Integer   xMax;
-   Integer   yMax;
-   Pnt3D     fovpt;
-   Pnt3D     offset;
+Extended  fova =  90.0;  /* Field-of-View whole angle (deg)     */
+Extended  fovs = 600.0;  /* Field-of-View display size (pixels) */
+Extended  ratio;
+Extended  fovcx;
+Extended  fovcy;
+Extended  fl;
+Extended  flmin;
+Extended  zoom;
+Extended  zfovr;
+Extended  sfacx, sfacy, sfacz;
+Extended  sfacyAR;  // sfacy scaled by viewport aspect ratio
+Extended  px, py, pz;
+Extended  x, y, z;
+Extended  p, t, r;  // yaw (psi), pitch (theta), roll (rho or phi)
+Integer   xMax;
+Integer   yMax;
+Pnt3D     fovpt;
+Pnt3D     offset;
 
 /* COORDINATE TRANSFORMATION INFORMATION */
 
-   Extended  cosp, sinp;
-   Extended  cost, sint;
-   Extended  cosr, sinr;
-   Extended  dcx1, dcy1, dcz1;
-   Extended  dcx2, dcy2, dcz2;
-   Extended  dcx3, dcy3, dcz3;
+Extended  cosp, sinp;
+Extended  cost, sint;
+Extended  cosr, sinr;
+Extended  dcx1, dcy1, dcz1;
+Extended  dcx2, dcy2, dcz2;
+Extended  dcx3, dcy3, dcz3;
 
 /* GROUND PLANE GRID INFORMATION */
 
-   Pnt3D  GridPt1[4];
-   Pnt3D  GridPt2[4];
+Pnt3D  GridPt1[4];
+Pnt3D  GridPt2[4];
 
 /* POLYGON INFORMATION */
 
 #define maxpol  1024  /* Maximum number of polygons                 */
 #define maxpnt    16  /* Maximum number of points in loaded polygon */
 
-   Integer  polcnt = 0;
-   Pol3D    pollist[maxpol];
-   Pnt3D    pntlist[maxpnt];
-   PQtype   polPQ;
+Integer  polcnt = 0;
+Pol3D    pollist[maxpol];
+Pnt3D    pntlist[maxpnt];
+PQtype   polPQ;
 
 #define poltyp_gnd  0  /* ground polygon type  */
 #define poltyp_tgt  1  /* target polygon type  */
@@ -190,41 +229,40 @@ typedef struct
 
 /* TXYZ TRAJECTORY INFORMATION */
 
-   Extended  tsec;
-   Integer   ktot;
-   Extended  XM, YM, ZM;
-   Extended  XT, YT, ZT;
-   Extended  PSM, THM, PHM;
-   Extended  PST, THT, PHT;
-   char      numstr[24];
+Extended  tsec;
+Integer   ktot;
+Extended  XM, YM, ZM;
+Extended  XT, YT, ZT;
+Extended  PSM, THM, PHM;
+Extended  PST, THT, PHT;
+char      numstr[24];
 
 /* DISPLAY INFORMATION */
 
-   Extended  xAspect = 1.0;
-   Extended  yAspect = 1.0;
-   Pixmap    drawn;
-   Pixmap    blank;
-   Word      SolidPattern;
-   Word      White  = 0;
-   Word      Black  = 1;
-   Word      Red    = 2;
-   Word      Green  = 3;
-   Word      Blue   = 4;
-   Word      Cyan   = 5;
-   Word      Yellow = 6;
-   Word      Brown  = 7;
-   Word      Colors[] = {0, 1, 2, 3, 4, 5, 6, 7};
-   Longint   cpumsec1;
-   Longint   cpumsec2;
+Extended  xAspect = 1.0;
+Extended  yAspect = 1.0;
+Pixmap    drawn;
+Pixmap    blank;
+Word      SolidPattern;
+Word      White  = 0;
+Word      Black  = 1;
+Word      Red    = 2;
+Word      Green  = 3;
+Word      Blue   = 4;
+Word      Cyan   = 5;
+Word      Yellow = 6;
+Word      Brown  = 7;
+Word      Colors[] = {0, 1, 2, 3, 4, 5, 6, 7};
+Longint   cpumsec1;
+Longint   cpumsec2;
 
 /* I/O BUFFERS */
 
-   char  sbuff[512];
+char  sbuff[512];
 
 /*
  * PNT_3D VECTOR MATH FUNCTIONS
 */
-
 Extended MagP3D(Pnt3D A)
 {
    // Return scalar m as magnitude of A.
@@ -436,7 +474,6 @@ printf("MakePol:  normal 1 =  %f  %f  %f\n",pollist[polcnt].Nrm1.X,
 /*
  * COMPUTE WORLD SPACE TO VIEW SPACE TRANSFORMATION MATRIX
 */
-
 void MakeMatrix ( Extended p, Extended t, Extended r )
 {
    // RHS yaw, pitch, roll as p, t, r respectively in radians.
@@ -582,12 +619,12 @@ void XfrmPoly ( Integer iPol )
 
    /* Check if polygon surface is visible. */
 
-   if (pollist[iPol].Vis > 1) {
+   if (pollist[iPol].Vis == 2) {
       nrm1  = pollist[iPol].Nrm1;
       nrm2x = dcx1*nrm1.X + dcy1*nrm1.Y + dcz1*nrm1.Z;
       nrm2y = dcx2*nrm1.X + dcy2*nrm1.Y + dcz2*nrm1.Z;
       nrm2z = dcx3*nrm1.X + dcy3*nrm1.Y + dcz3*nrm1.Z;
-      dotp  = nrm2x*eye2x + nrm2y*eye2y + nrm2z*eye2z;
+      dotp  = nrm2x*dcx1 + nrm2y*dcx2 + nrm2z*dcx3;
       if (dotp > 0.0) {
          pollist[iPol].Flg = FALSE;
          return;
@@ -909,7 +946,10 @@ void DrawPoly3D( Integer iPol, Display *display, Pixmap drawable )
    }
 }
 
-void LoadPoly ( FILE *lfni, const char* polyfile)
+/*
+ * LOADS POLYGON DATA STRUCTURES FROM FACET SHAPE MODEL POLYGON FILES.
+*/
+void LoadPoly ( FILE *lfni, const char* polyfile )
 {
    Integer   i,k;
    Integer   polpnt, polpri, polcol, poltyp, polvis;
@@ -986,6 +1026,9 @@ void LoadPoly ( FILE *lfni, const char* polyfile)
    } while ( ! ( feof(lfni) || (polcnt == maxpol) ) );
 }
 
+/*
+ * 3D RENDERING OF MISSILE/TARGET ENGAGEMENT FROM TXYZ FILE
+*/
 void draw3D (Widget w, Display *display, Window drawable)
 {
    Arg          args[10];

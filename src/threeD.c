@@ -6,6 +6,7 @@
  *        of polygons.
 */
 /**********************************************************************/
+#define THREED_C
 
 #include <unistd.h>
 #include <stdlib.h>
