@@ -5,7 +5,7 @@ txyz/TXYZ.OUT.*
 !txyz/TXYZ.OUT.2130
 Ximg/
 TXYZ.OUT
-.code-workspace
+*.code-workspace
 *.o
 *.exe
 *\~
