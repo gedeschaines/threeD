@@ -590,6 +590,8 @@ void XfrmGrid ()
 void XfrmPoly ( Integer iPol )
 {
    PolPtr       aPolRec;
+   Extended     eye1x, eye1y, eye1z;
+   Extended     eye2x, eye2y, eye2z;
    Pnt3D        nrm1;
    Extended     nrm2x, nrm2y, nrm2z;
    Extended     dotp;
@@ -606,6 +608,15 @@ void XfrmPoly ( Integer iPol )
    printf("  Polygon # %d\n",iPol);
 #endif
 
+   /* Compute eye vector to polygon centroid in viewport. */
+
+   eye1x = pollist[iPol].Cnt1.X - fovpt.X;
+   eye1y = pollist[iPol].Cnt1.Y - fovpt.Y;
+   eye1z = pollist[iPol].Cnt1.Z - fovpt.Z;
+   eye2x = dcx1*eye1x + dcy1*eye1y + dcz1*eye1z;
+   eye2y = dcx2*eye1x + dcy2*eye1y + dcz2*eye1z;
+   eye2z = dcx3*eye1x + dcy3*eye1y + dcz3*eye1z;
+
    /* Check if polygon surface is visible. */
 
    if ( pollist[iPol].Vis == 2 ) {
@@ -613,7 +624,7 @@ void XfrmPoly ( Integer iPol )
       nrm2x = dcx1*nrm1.X + dcy1*nrm1.Y + dcz1*nrm1.Z;
       nrm2y = dcx2*nrm1.X + dcy2*nrm1.Y + dcz2*nrm1.Z;
       nrm2z = dcx3*nrm1.X + dcy3*nrm1.Y + dcz3*nrm1.Z;
-      dotp  = nrm2x*dcx1 + nrm2y*dcx2 + nrm2z*dcx3;
+      dotp  = nrm2x*eye2x + nrm2y*eye2y + nrm2z*eye2z;
       if (dotp > 0.0) {
          pollist[iPol].Flg = FALSE;
          return;
@@ -665,13 +676,7 @@ void XfrmPoly ( Integer iPol )
 
    if ( ( inflag ) && ( ! FullPQ(polPQ) ) )
    {
-      xd    = pollist[iPol].Cnt1.X - fovpt.X;
-      yd    = pollist[iPol].Cnt1.Y - fovpt.Y;
-      zd    = pollist[iPol].Cnt1.Z - fovpt.Z;
-      xs    = dcx1*xd + dcy1*yd + dcz1*zd;
-      ys    = dcx2*xd + dcy2*yd + dcz2*zd;
-      zs    = dcx3*xd + dcy3*yd + dcz3*zd;
-      rs    = sqrt(xs*xs+ ys*ys + zs*zs);
+      rs    = sqrt(eye2x*eye2x+ eye2y*eye2y + eye2z*eye2z);
       rsmm  = rs*f1K;
       irsmm = lroundd(rsmm);
       anElement.Key  = pcode + irsmm;
@@ -683,7 +688,7 @@ void XfrmPoly ( Integer iPol )
                         pollist[iPol].Typ,
                               pollist[iPol].Vis,
                                  pollist[iPol].Pri,
-                                    xs, ys, zs, rsmm, irsmm);
+                                    eye2x, eye2y, eye2z, rsmm, irsmm);
 #endif
       PriorityEnq(&polPQ,anElement);
       if ( irsmm < 0L ) {
