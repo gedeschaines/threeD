@@ -1577,11 +1577,17 @@ void draw3D (Widget w, Display *display, Window drawable)
 
 /*------ SAVE DRAWN PIXMAP TO X11 PIXMAP FILE */
 
-         if ( img_OUT == 1) {
+         if ( img_OUT == 1 ) {
             if ( (tsec+0.005 - last_tsec) >= img_dtsec  ) {
                sprintf(imgout_fpath,"./Ximg/img_%04hd.xpm",img_count++);
                XpmWriteFileFromPixmap(display,imgout_fpath,drawn,None,NULL);
                last_tsec = tsec;
+            }
+            if ( ktot < 0 ) {
+               // Duplicate last image to ensure final frame in an animated
+               // GIF or MP4 video file shows time of intercept.
+               sprintf(imgout_fpath,"./Ximg/img_%04hd.xpm",img_count);
+               XpmWriteFileFromPixmap(display,imgout_fpath,drawn,None,NULL);               
             }
          }
 
