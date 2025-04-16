@@ -590,8 +590,6 @@ void XfrmGrid ()
 void XfrmPoly ( Integer iPol )
 {
    PolPtr       aPolRec;
-   Extended     eye1x, eye1y, eye1z;
-   Extended     eye2x, eye2y, eye2z;
    Pnt3D        nrm1;
    Extended     nrm2x, nrm2y, nrm2z;
    Extended     dotp;
@@ -608,18 +606,9 @@ void XfrmPoly ( Integer iPol )
    printf("  Polygon # %d\n",iPol);
 #endif
 
-   /* Compute eye vector to polygon centroid in viewport frame. */
-        
-   eye1x = pollist[iPol].Cnt1.X - fovpt.X;
-   eye1y = pollist[iPol].Cnt1.Y - fovpt.Y;
-   eye1z = pollist[iPol].Cnt1.Z - fovpt.Z;
-   eye2x = dcx1*eye1x + dcy1*eye1y + dcz1*eye1z;
-   eye2y = dcx2*eye1x + dcy2*eye1y + dcz2*eye1z;
-   eye2z = dcx3*eye1x + dcy3*eye1y + dcz3*eye1z;
-
    /* Check if polygon surface is visible. */
 
-   if (pollist[iPol].Vis == 2) {
+   if ( pollist[iPol].Vis == 2 ) {
       nrm1  = pollist[iPol].Nrm1;
       nrm2x = dcx1*nrm1.X + dcy1*nrm1.Y + dcz1*nrm1.Z;
       nrm2y = dcx2*nrm1.X + dcy2*nrm1.Y + dcz2*nrm1.Z;
@@ -676,7 +665,13 @@ void XfrmPoly ( Integer iPol )
 
    if ( ( inflag ) && ( ! FullPQ(polPQ) ) )
    {
-      rs    = sqrt(eye2x*eye2x+ eye2y*eye2y + eye2z*eye2z);
+      xd    = pollist[iPol].Cnt1.X - fovpt.X;
+      yd    = pollist[iPol].Cnt1.Y - fovpt.Y;
+      zd    = pollist[iPol].Cnt1.Z - fovpt.Z;
+      xs    = dcx1*xd + dcy1*yd + dcz1*zd;
+      ys    = dcx2*xd + dcy2*yd + dcz2*zd;
+      zs    = dcx3*xd + dcy3*yd + dcz3*zd;
+      rs    = sqrt(xs*xs+ ys*ys + zs*zs);
       rsmm  = rs*f1K;
       irsmm = lroundd(rsmm);
       anElement.Key  = pcode + irsmm;
@@ -688,7 +683,7 @@ void XfrmPoly ( Integer iPol )
                         pollist[iPol].Typ,
                               pollist[iPol].Vis,
                                  pollist[iPol].Pri,
-                                    eye2x, eye2y, eye2z, rsmm, irsmm);
+                                    xs, ys, zs, rsmm, irsmm);
 #endif
       PriorityEnq(&polPQ,anElement);
       if ( irsmm < 0L ) {
@@ -1036,6 +1031,7 @@ void draw3D (Widget w, Display *display, Window drawable)
    Extended     tanfv;
    Extended     true_tsec =  0.0;
    Extended     last_tsec = -1.0/img_FPS;
+   Extended     last_XM, last_YM, last_ZM;
    Extended     DXTM, DYTM, DZTM, RTM, UXTM, UYTM, UZTM;
    Integer      n = 0;
    Integer      i, k, itot, ipad;
@@ -1200,6 +1196,12 @@ void draw3D (Widget w, Display *display, Window drawable)
       fclose(lfni);
    }
 
+/* MAY NEED TO SAVE LAST MISSILE POSITION */
+   
+   XM = 0.0;
+   YM = 0.0;
+   ZM = 0.0;
+
 /* OPEN TRAJECTORY DATA FILE */
 
    sprintf(txyzout_fpath,"./txyz/TXYZ.OUT.%04hd",run_NUM);
@@ -1312,6 +1314,14 @@ void draw3D (Widget w, Display *display, Window drawable)
          continue;
       }
 
+      // Save last "true" missile position (i.e., that
+      // read from a previous ktot >= 0 record).
+      if ( true_tsec > 0.0 ) {
+         last_XM = XM;
+         last_YM = YM;
+         last_ZM = ZM;
+      }
+
 /*--- GET MISSILE AND TARGET POSITION */
       fgets(sbuff,128,lfnt);
       k = sscanf(sbuff,"%lf %hd %lf %lf %lf %lf %lf %lf\n",
@@ -1408,9 +1418,20 @@ void draw3D (Widget w, Display *display, Window drawable)
          DYTM = YT - YM;  //       target positions being identical,
          DZTM = ZT - ZM;  //       yielding [DXTM,DYTM,DZTM]=[0,0,0].
          RTM  = sqrt(DXTM*DXTM + DYTM*DYTM + DZTM*DZTM);
-         UXTM = DXTM/RTM;
-         UYTM = DYTM/RTM;
-         UZTM = DZTM/RTM;
+         if ( RTM > 0.0 ) {
+            UXTM = DXTM/RTM;
+            UYTM = DYTM/RTM;
+            UZTM = DZTM/RTM;
+         } else if ( ktot > -1 ) {
+            // Use last valid missile velocity direction vector.
+            DXTM = XM - last_XM;
+            DYTM = YM - last_YM;
+            DZTM = ZM - last_ZM;
+            RTM  = sqrt(DXTM*DXTM + DYTM*DYTM + DZTM*DZTM);
+            UXTM = DXTM/RTM;
+            UYTM = DYTM/RTM;
+            UZTM = DZTM/RTM;
+         }
 /*------ CALCULATE FOV POSITION AND ORIENTATION */
          if ( align_fov_toward_tgt ) {
          /* Place fovpt near missile; align fov normal axis with unit vector from missile to target */
