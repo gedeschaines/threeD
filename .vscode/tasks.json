@@ -5,7 +5,7 @@
       "tasks": [
             {
                   "label": "gcc debug compile",
-                  "type": "shell",
+                  "type": "process",
                   "command": "/usr/bin/gcc",
                   "args": [
                         "-g",
@@ -33,7 +33,7 @@
             },
             {
                   "label": "gcc optim compile",
-                  "type": "shell",
+                  "type": "process",
                   "command": "/usr/bin/gcc",
                   "args": [
                         "-O2",
@@ -41,14 +41,14 @@
                         "-DLINUX",
                         "-DDBG_LVL=0",
                         "-o",
-                        "./bin/threeD.exe",  
+                        "./bin/threeD.exe",
                         "./src/threeD.c",
                         "-I/usr/include",
                         "-lm",
                         "-L/usr/lib/x86_64-linux-gnu",
                         "-lXm",
                         "-lXpm",
-                        "-lXt", 
+                        "-lXt",
                         "-lX11"
                   ],
                   "group": {
@@ -62,7 +62,9 @@
             {
                   "label": "create TXYZ.OUT symlink",
                   "command": "${workspaceFolder}/txyz_symlink",
-                  "args": ["0000"],
+                  "args": [
+                        "0000"
+                  ],
                   "type": "shell"
             }
       ]
